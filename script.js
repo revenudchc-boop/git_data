@@ -1852,7 +1852,6 @@ function openLesson(id){
   const content = document.getElementById('content');
   let html = '<h1 id="lesson-title">' + lesson.title + '</h1>';
   
-  // شريط تقدم الاختبارات
   html += `
     <div class="quiz-progress" id="quiz-progress">
       <span>🎯 تقدمك:</span>
@@ -1905,11 +1904,13 @@ function openLesson(id){
   document.getElementById('main').scrollTop = 0;
   renderSidebar();
   
-  // بناء الاختبارات بعد إدراج HTML
+  // تهيئة الاختبارات
   lesson.slides.forEach((slide, i)=>{
     initSlideQuiz(id, i);
   });
   
+  // 🆕 تطبيق نظام القفل
+  applySlideLocks();
   updateQuizProgressBar();
 }
 
@@ -1975,26 +1976,77 @@ function checkSlideAnswer(lessonId, slideIdx, selected, correct, btn){
   if(selected === correct){
     btn.classList.add('correct');
     fbDiv.className = 'slide-quiz-feedback show success';
-    fbDiv.textContent = '🎉 إجابة صحيحة! أحسنت';
+    fbDiv.textContent = '🎉 إجابة صحيحة! جاري فتح الشريحة التالية...';
+    
     const state = quizState[key] || {};
     state.passed = true;
     quizState[key] = state;
     saveProgress();
-    if(card) card.classList.add('quiz-passed');
+    
+    applySlideLocks();
     updateQuizProgressBar();
-    showToast('✅ إجابة صحيحة!');
+    
+    const lesson = curriculum.find(l => l.id === lessonId);
+    if(!lesson) return;
+    
+    // هل توجد شريحة تالية؟
+    const hasNextSlide = slideIdx < lesson.slides.length - 1;
+    
+    if(hasNextSlide){
+      // تأثير فتح الشريحة التالية
+      const nextCard = document.getElementById('slide-' + (slideIdx + 1));
+      if(nextCard){
+        nextCard.classList.add('quiz-unlock-animation');
+        setTimeout(() => {
+          nextCard.classList.remove('quiz-unlock-animation');
+        }, 700);
+      }
+    }
+    
+    // هل كان الصوت يعمل (Cloud أو محلي)؟
+    const wasCloudActive = document.getElementById('cloud-speak-btn').classList.contains('speaking-cloud');
+    const wasLocalActive = isSpeaking;
+    const shouldContinueAudio = wasCloudActive || wasLocalActive;
+    
+    showToast('✅ إجابة صحيحة! الشريحة التالية مفتوحة');
+    
+    // 🆕 انتقل للشريحة التالية تلقائياً
+    if(hasNextSlide){
+      setTimeout(() => {
+        scrollToSlide(slideIdx + 1);
+        
+        // 🆕 شغّل الصوت تلقائياً في الشريحة التالية
+        // (إذا كان autoAdvance مفعلاً أو كان الصوت يعمل قبل الإجابة)
+        if(autoAdvance || shouldContinueAudio){
+          setTimeout(() => {
+            if(shouldContinueAudio && wasCloudActive){
+              // كان يستخدم الصوت السحابي - استمر به
+              speakSlideCloud(slideIdx + 1);
+            } else if(shouldContinueAudio && wasLocalActive){
+              // كان يستخدم الصوت المحلي - استمر به
+              speakSlide(slideIdx + 1);
+            } else {
+              // 🆕 شغّل الصوت المحلي افتراضياً بعد الإجابة
+              speakSlide(slideIdx + 1);
+            }
+          }, 500);
+        }
+      }, 800);
+    } else {
+      // آخر شريحة
+      if(shouldContinueAudio){
+        showToast('🎉 أكملت جميع الشرائح!');
+      }
+    }
+    
   } else {
     btn.classList.add('wrong');
     allOpts[correct].classList.add('correct');
     fbDiv.className = 'slide-quiz-feedback show error';
-    fbDiv.textContent = '❌ إجابة خاطئة. الإجابة الصحيحة بالأخضر. حاول مرة أخرى';
+    fbDiv.textContent = '❌ إجابة خاطئة. الإجابة الصحيحة بالأخضر. سؤال جديد بعد قليل...';
     showToast('❌ حاول مرة أخرى');
     
-    // بعد 2.5 ثانية، أعد المحاولة بسؤال جديد
     setTimeout(() => {
-      if(card) {
-        card.classList.remove('quiz-passed');
-      }
       initSlideQuiz(lessonId, slideIdx);
     }, 3000);
   }
@@ -2190,11 +2242,31 @@ async function speakSlide(index){
     hideVoiceBadge(index);
     unhighlightSlide(index);
     endSpeak();
+    
+    // 🆕 التحقق من حالة الاختبار قبل الانتقال
     if(autoAdvance){
       const lesson = curriculum.find(l=>l.id===currentLesson);
-      if(currentSlideIndex < lesson.slides.length - 1){
-        setTimeout(()=>speakSlide(currentSlideIndex + 1), 500);
+      if(!lesson) return;
+      
+      // هل انتهت الشرائح؟
+      if(currentSlideIndex >= lesson.slides.length - 1){
+        // آخر شريحة - لا ننتقل
+        return;
       }
+      
+      // 🆕 هل تم اجتياز اختبار الشريحة الحالية؟
+      const key = currentLesson + '-' + currentSlideIndex;
+      const state = quizState[key] || {};
+      const hasQuiz = slideQuizzes[key] && slideQuizzes[key].length > 0;
+      
+      if(hasQuiz && !state.passed){
+        // لم يُجتَز الاختبار - لا ننتقل
+        showToast('🎯 أجب على السؤال أولاً قبل الانتقال للشريحة التالية');
+        return;
+      }
+      
+      // ✅ تم اجتياز الاختبار - ننتقل
+      setTimeout(()=>speakSlide(currentSlideIndex + 1), 500);
     }
   };
   utter.onerror = ()=>{
@@ -2254,7 +2326,20 @@ async function speakSlideCloud(index){
     unhighlightSlide(index);
     cloudBtn.classList.remove('speaking-cloud');
     currentAudio = null;
+    
+    // 🆕 التحقق من حالة الاختبار قبل الانتقال
     if(autoAdvance && currentSlideIndex < lesson.slides.length - 1){
+      const key = currentLesson + '-' + currentSlideIndex;
+      const state = quizState[key] || {};
+      const hasQuiz = slideQuizzes[key] && slideQuizzes[key].length > 0;
+      
+      if(hasQuiz && !state.passed){
+        // لم يُجتَز الاختبار - لا ننتقل
+        showToast('🎯 أجب على السؤال أولاً قبل الانتقال للشريحة التالية');
+        return;
+      }
+      
+      // ✅ تم اجتياز الاختبار - ننتقل
       setTimeout(()=>speakSlideCloud(currentSlideIndex + 1), 500);
     }
   } catch(err){
@@ -2694,6 +2779,227 @@ if('speechSynthesis' in window){
     document.removeEventListener('touchstart', once);
   }, {once:true});
 }
+
+/* ==========================================================
+   🔒 نظام قفل الشرائح الذكي
+   ========================================================== */
+
+// تطبيق القفل على الشرائح بناءً على حالة الاختبارات
+function applySlideLocks(){
+  if(!currentLesson) return;
+  const lesson = curriculum.find(l => l.id === currentLesson);
+  if(!lesson) return;
+  
+  let hasUnpassedSlide = false;
+  
+  lesson.slides.forEach((_, i) => {
+    const card = document.getElementById('slide-' + i);
+    if(!card) return;
+    
+    const key = currentLesson + '-' + i;
+    const state = quizState[key] || {};
+    const hasQuiz = slideQuizzes[key] && slideQuizzes[key].length > 0;
+    
+    // إزالة كل الحالات القديمة
+    card.classList.remove('quiz-blocked', 'quiz-future', 'quiz-passed', 'quiz-locked');
+    
+    if(state.passed || !hasQuiz){
+      // ✅ الشريحة مفتوحة وتم اجتيازها
+      card.classList.add('quiz-passed');
+    } else if(!hasUnpassedSlide){
+      // ⏳ الشريحة الحالية بحاجة للاختبار - لكنها مرئية (لأنها التالية في الدور)
+      hasUnpassedSlide = true;
+      // لا نضيف قفل هنا - هذه هي الشريحة النشطة
+    } else {
+      // 🔒 شريحة مستقبلية - مخفية حتى يُجاب على السابقة
+      card.classList.add('quiz-future');
+    }
+  });
+}
+
+// الحصول على أول شريحة لم تُجتَز (يجب الإجابة عليها)
+function getFirstUnpassedSlideIndex(){
+  if(!currentLesson) return -1;
+  const lesson = curriculum.find(l => l.id === currentLesson);
+  if(!lesson) return -1;
+  
+  for(let i = 0; i < lesson.slides.length; i++){
+    const key = currentLesson + '-' + i;
+    const state = quizState[key] || {};
+    const hasQuiz = slideQuizzes[key] && slideQuizzes[key].length > 0;
+    if(hasQuiz && !state.passed){
+      return i;
+    }
+  }
+  return -1; // كل الشرائح مفتوحة
+}
+
+// قفل التمرير
+let scrollLocked = false;
+
+function lockScrollIfNeeded(){
+  const firstUnpassed = getFirstUnpassedSlideIndex();
+  if(firstUnpassed === -1){
+    scrollLocked = false;
+    return false;
+  }
+  
+  // إذا كانت الشريحة التي يجب الإجابة عليها هي الأخيرة، لا نمنع التمرير
+  const lesson = curriculum.find(l => l.id === currentLesson);
+  if(firstUnpassed === lesson.slides.length - 1){
+    scrollLocked = false;
+    return false;
+  }
+  
+  scrollLocked = true;
+  return true;
+}
+
+// منع التمرير عند محاولة تجاوز الشريحة الحالية
+function handleScrollAttempt(e){
+  if(!currentLesson) return;
+  if(scrollLocked){
+    // تحقق أولاً: هل هناك شرائح مفتوحة أسفل؟
+    const firstUnpassed = getFirstUnpassedSlideIndex();
+    if(firstUnpassed === -1) return; // لا يوجد قفل، اسمح بالتمرير
+    
+    // ابحث عن آخر شريحة مفتوحة (تمت الإجابة عليها)
+    let lastUnlockedIdx = 0;
+    for(let i = 0; i < 20; i++){
+      const key = currentLesson + '-' + i;
+      const state = quizState[key] || {};
+      if(state.passed){
+        lastUnlockedIdx = i;
+      } else {
+        break;
+      }
+    }
+    
+    // إذا كان المستخدم يحاول النزول لما بعد الشريحة المفتوحة، امنعه
+    const main = document.getElementById('main');
+    const unlockedCard = document.getElementById('slide-' + lastUnlockedIdx);
+    if(!unlockedCard) return;
+    
+    const cardRect = unlockedCard.getBoundingClientRect();
+    const mainRect = main.getBoundingClientRect();
+    
+    // إذا كانت الشريحة المفتوحة قد خرجت من الشاشة (تمرير للأسفل)
+    if(cardRect.bottom < mainRect.top + 50){
+      e.preventDefault();
+      showScrollWarning();
+      // ارجع للأعلى
+      unlockedCard.scrollIntoView({behavior:'smooth', block:'start'});
+      return;
+    }
+  }
+}
+
+function showScrollWarning(){
+  if(document.querySelector('.scroll-warning')) return;
+  const warn = document.createElement('div');
+  warn.className = 'scroll-warning';
+  warn.textContent = '🔒 أجب على السؤال أولاً قبل الانتقال للشريحة التالية';
+  document.body.appendChild(warn);
+  setTimeout(()=>warn.remove(), 2000);
+}
+
+/* ==========================================================
+   🚫 نظام منع التمرير للشرائح المقفلة
+   ========================================================== */
+
+const mainEl = document.getElementById('main');
+
+// مراقبة التمرير بالعجلة (Wheel)
+mainEl.addEventListener('wheel', (e) => {
+  if(!currentLesson) return;
+  if(scrollLocked && e.deltaY > 0){
+    // المستخدم يحاول التمرير للأسفل
+    const firstUnpassed = getFirstUnpassedSlideIndex();
+    if(firstUnpassed === -1) return;
+    
+    // ابحث عن آخر شريحة مفتوحة
+    let lastUnlockedIdx = -1;
+    const lesson = curriculum.find(l => l.id === currentLesson);
+    if(!lesson) return;
+    
+    for(let i = 0; i < lesson.slides.length; i++){
+      const key = currentLesson + '-' + i;
+      const state = quizState[key] || {};
+      if(state.passed || !slideQuizzes[key]){
+        lastUnlockedIdx = i;
+      } else {
+        break;
+      }
+    }
+    
+    if(lastUnlockedIdx === -1) return;
+    const unlockedCard = document.getElementById('slide-' + lastUnlockedIdx);
+    if(!unlockedCard) return;
+    
+    const cardRect = unlockedCard.getBoundingClientRect();
+    const mainRect = mainEl.getBoundingClientRect();
+    
+    // إذا كانت الشريحة المفتوحة في أعلى الشاشة والمستخدم يريد النزول
+    if(cardRect.bottom < mainRect.top + 100){
+      e.preventDefault();
+      showScrollWarning();
+      unlockedCard.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  }
+}, { passive: false });
+
+// مراقبة اللمس (Touch) للموبايل
+let touchStartY = 0;
+let touchStartTime = 0;
+
+mainEl.addEventListener('touchstart', (e) => {
+  touchStartY = e.touches[0].clientY;
+  touchStartTime = Date.now();
+}, { passive: true });
+
+mainEl.addEventListener('touchmove', (e) => {
+  if(!currentLesson) return;
+  if(!scrollLocked) return;
+  
+  const currentY = e.touches[0].clientY;
+  const deltaY = touchStartY - currentY; // موجب = تمرير للأسفل
+  
+  if(deltaY > 30){
+    // المستخدم يحاول التمرير للأسفل
+    const lesson = curriculum.find(l => l.id === currentLesson);
+    if(!lesson) return;
+    
+    let lastUnlockedIdx = -1;
+    for(let i = 0; i < lesson.slides.length; i++){
+      const key = currentLesson + '-' + i;
+      const state = quizState[key] || {};
+      if(state.passed || !slideQuizzes[key]){
+        lastUnlockedIdx = i;
+      } else {
+        break;
+      }
+    }
+    
+    if(lastUnlockedIdx === -1) return;
+    const unlockedCard = document.getElementById('slide-' + lastUnlockedIdx);
+    if(!unlockedCard) return;
+    
+    const cardRect = unlockedCard.getBoundingClientRect();
+    const mainRect = mainEl.getBoundingClientRect();
+    
+    if(cardRect.bottom < mainRect.top + 100){
+      e.preventDefault();
+      showScrollWarning();
+      unlockedCard.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  }
+}, { passive: false });
+
+// تحديث القفل عند أي تغيير في التمرير
+mainEl.addEventListener('scroll', () => {
+  if(!currentLesson) return;
+  lockScrollIfNeeded();
+});
 
 console.log('✅ المدرس الشخصي جاهز - الإصدار 10');
 console.log('📚 عدد الدروس:', curriculum.length);
