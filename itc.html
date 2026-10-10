@@ -1,0 +1,2290 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1e293b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>المدرس الشخصي</title>
+<style>
+:root{
+  --primary:#3b82f6; --success:#10b981; --warn:#f59e0b;
+  --danger:#ef4444; --purple:#8b5cf6; --cloud:#0ea5e9;
+  --bg:#f1f5f9; --sidebar:#0f172a;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;width:100%;overflow:hidden}
+body{
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif;
+  background:var(--bg);color:#1e293b;
+  display:flex;flex-direction:column;overscroll-behavior:none;
+}
+#topbar{
+  background:#fff;padding:10px 12px;
+  padding-top:calc(10px + var(--safe-top));
+  display:flex;gap:6px;align-items:center;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  z-index:100;flex-shrink:0;
+}
+#topbar h1{
+  flex:1;font-size:13px;color:var(--primary);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  min-width:50px;text-align:center;
+}
+.icon-btn{
+  border:none;background:#f1f5f9;color:#475569;
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;
+  transition:transform .15s;flex-shrink:0;padding:0;
+}
+.icon-btn:active{transform:scale(.9)}
+.icon-btn.dark{background:#475569;color:#fff}
+.icon-btn.danger{background:var(--danger);color:#fff}
+.icon-btn.cloud{background:var(--cloud);color:#fff}
+.icon-btn.warn{background:var(--warn);color:#fff}
+.icon-btn.purple{background:var(--purple);color:#fff}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.7)}50%{box-shadow:0 0 0 15px rgba(239,68,68,0)}}
+@keyframes pulseCloud{0%,100%{box-shadow:0 0 0 0 rgba(14,165,233,.7)}50%{box-shadow:0 0 0 15px rgba(14,165,233,0)}}
+.speaking{animation:pulse 1.2s infinite}
+.speaking-cloud{animation:pulseCloud 1.2s infinite}
+
+#layout{flex:1;display:flex;overflow:hidden;position:relative}
+
+#sidebar{
+  width:290px;background:var(--sidebar);color:#fff;
+  display:flex;flex-direction:column;overflow-y:auto;
+  transition:margin-right .3s;flex-shrink:0;
+  padding-bottom:var(--safe-bottom);
+}
+#sidebar.collapsed{margin-right:-290px}
+#sidebar h2{
+  text-align:center;padding:20px 15px;font-size:16px;
+  border-bottom:1px solid #334155;
+  position:sticky;top:0;background:var(--sidebar);z-index:5;
+}
+.unit-header{
+  padding:10px 18px;background:#0a0f1f;
+  font-size:11.5px;font-weight:bold;color:#94a3b8;
+}
+.lesson-item{
+  padding:13px 18px;cursor:pointer;
+  border-bottom:1px solid #1e293b;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;gap:8px;transition:background .2s;
+}
+.lesson-item:hover{background:#1e293b}
+.lesson-item.active{background:var(--primary);font-weight:bold}
+.badge{font-size:15px;flex-shrink:0}
+
+#main{
+  flex:1;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:calc(30px + var(--safe-bottom));
+  scroll-behavior:smooth;
+}
+#content{
+  padding:20px 16px 40px;
+  max-width:1000px;
+  margin:0 auto;
+  width:100%;
+}
+#lesson-title{
+  font-size:22px;color:var(--primary);
+  border-bottom:3px solid var(--primary);
+  padding-bottom:12px;margin-bottom:22px;line-height:1.5;
+}
+
+.slide-card{
+  background:#fff;
+  border-radius:18px;
+  padding:24px;
+  margin-bottom:22px;
+  box-shadow:0 4px 18px rgba(0,0,0,.07);
+  border:2px solid transparent;
+  transition:border-color .3s, box-shadow .3s, transform .3s;
+  scroll-margin-top:80px;
+  width:100%;
+}
+.slide-card.active-voice{
+  border-color:var(--primary);
+  box-shadow:0 6px 24px rgba(59,130,246,.25);
+  transform:scale(1.005);
+}
+.slide-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:16px;
+  flex-wrap:wrap;gap:8px;
+}
+.slide-number{
+  display:inline-block;
+  background:linear-gradient(135deg,var(--primary),var(--purple));
+  color:#fff;padding:6px 16px;border-radius:20px;
+  font-size:12px;font-weight:700;
+}
+.slide-play-btn{
+  border:none;background:#eff6ff;color:var(--primary);
+  width:40px;height:40px;border-radius:50%;
+  font-size:17px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s;
+}
+.slide-play-btn:active{transform:scale(.9)}
+
+.slide-title{
+  font-size:21px;color:var(--primary);
+  font-weight:800;margin-bottom:18px;
+  padding-bottom:10px;
+  border-bottom:2px dashed #93c5fd;
+  line-height:1.5;
+}
+
+.definition-box{
+  background:#eff6ff;border-right:5px solid var(--primary);
+  padding:16px 20px;border-radius:12px;margin-bottom:16px;
+  font-size:15.5px;line-height:2;color:#1e3a8a;
+}
+.definition-box .term{
+  font-weight:800;color:#1e40af;display:block;
+  margin-bottom:8px;font-size:16px;
+}
+
+.slide-text{font-size:15.5px;line-height:2.1;color:#1e293b;margin-bottom:14px}
+.slide-text b{color:#1e40af;font-weight:800}
+
+.slide-list{list-style:none;padding:0}
+.slide-list li{
+  background:#f8fafc;padding:14px 18px;margin-bottom:10px;
+  border-radius:10px;border-right:4px solid var(--primary);
+  font-size:15px;line-height:2;
+}
+.slide-list li b{color:#1e40af}
+
+.slide-illustration{
+  background:#fafbfc;
+  border-radius:16px;
+  padding:20px 15px;
+  margin:18px 0;
+  border:1px solid #e2e8f0;
+  width:100%;
+  overflow:hidden;
+}
+.slide-illustration svg{
+  width:100%;
+  height:auto;
+  display:block;
+  max-height:340px;
+}
+
+.voice-badge{
+  display:none;background:#dbeafe;color:#1e40af;
+  padding:8px 16px;border-radius:20px;
+  margin-bottom:14px;
+  font-size:12.5px;font-weight:600;
+  align-items:center;gap:8px;
+}
+.voice-badge.active{display:inline-flex}
+.voice-badge.cloud{background:#e0f2fe;color:#0c4a6e}
+.voice-wave{display:inline-flex;gap:3px;align-items:center}
+.voice-wave span{width:3px;height:12px;background:#3b82f6;border-radius:2px;animation:wave 1s infinite ease-in-out}
+.voice-badge.cloud .voice-wave span{background:var(--cloud)}
+.voice-wave span:nth-child(2){animation-delay:.15s}
+.voice-wave span:nth-child(3){animation-delay:.3s}
+.voice-wave span:nth-child(4){animation-delay:.45s}
+@keyframes wave{0%,100%{height:6px}50%{height:18px}}
+
+.teacher-hidden{display:none !important}
+
+.action-bar{
+  display:flex;gap:10px;flex-wrap:wrap;
+  margin-top:26px;background:#fff;padding:16px;border-radius:16px;
+  box-shadow:0 4px 18px rgba(0,0,0,.07);
+}
+.action-bar .btn{
+  flex:1;min-width:100px;padding:15px 12px;
+  border:none;border-radius:10px;
+  font-family:inherit;font-size:14px;font-weight:700;
+  cursor:pointer;color:#fff;transition:transform .15s;
+}
+.action-bar .btn:active{transform:scale(.97)}
+.btn-success{background:var(--success)}
+.btn-warn{background:var(--warn)}
+.btn-primary{background:var(--primary)}
+
+#overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:90}
+#overlay.active{display:block}
+
+#floating-actions{
+  position:fixed;
+  bottom:calc(20px + var(--safe-bottom));
+  right:20px;
+  display:flex;flex-direction:column;gap:10px;
+  z-index:80;
+}
+.float-btn{
+  width:52px;height:52px;border-radius:50%;
+  border:none;color:#fff;font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  box-shadow:0 4px 15px rgba(0,0,0,.25);
+  transition:transform .15s;
+}
+.float-btn:active{transform:scale(.9)}
+.float-btn.ask{background:var(--purple)}
+.float-btn.top{background:#64748b}
+
+#voice-panel{position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:1000;display:none;align-items:flex-end}
+#voice-panel.active{display:flex}
+#voice-panel-box{background:#fff;width:100%;max-height:92vh;border-radius:24px 24px 0 0;padding:22px;padding-bottom:calc(22px + var(--safe-bottom));overflow-y:auto;animation:slideUp .3s}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;background:#cbd5e1;border-radius:2px;margin:0 auto 15px}
+.panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:12px;border-bottom:1px solid #e2e8f0}
+.panel-title h3{color:var(--purple);font-size:17px}
+.close-x{background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;color:#475569}
+
+.voice-list{display:flex;flex-direction:column;gap:8px;max-height:250px;overflow-y:auto;padding:10px;border-radius:10px;background:#f8fafc}
+.voice-item{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:10px 12px;cursor:pointer;font-size:13px}
+.voice-item.selected{border-color:var(--purple);background:#faf5ff}
+.voice-item-info{flex:1;min-width:0}
+.voice-item-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voice-item-lang{font-size:11px;color:#64748b;margin-top:2px}
+.voice-item-actions{display:flex;gap:6px;flex-shrink:0}
+.mini-btn{border:none;padding:6px 12px;border-radius:8px;font-family:inherit;font-size:11.5px;font-weight:600;cursor:pointer;color:#fff;background:var(--primary)}
+.mini-btn.purple{background:var(--purple)}
+.mini-btn.success{background:var(--success)}
+.mini-btn.gray{background:#94a3b8}
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:15px;background:#f8fafc;padding:12px;border-radius:10px}
+.slider-row label{font-size:13px;font-weight:600;color:#475569;min-width:75px}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;background:#cbd5e1;border-radius:3px;outline:none}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;background:var(--purple);border-radius:50%;cursor:pointer}
+.slider-value{font-size:12px;font-weight:700;color:var(--purple);min-width:50px;text-align:center;background:#fff;padding:4px 8px;border-radius:6px}
+.test-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--purple);color:#fff;font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.help-box{background:#fffbeb;border-right:4px solid var(--warn);padding:12px 14px;border-radius:10px;font-size:12.5px;line-height:1.9;color:#78350f}
+.help-box b{color:#92400e}
+
+#ask-modal{position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:1000;display:none;align-items:flex-end}
+#ask-modal.active{display:flex}
+#ask-box{background:#fff;width:100%;max-height:90vh;border-radius:24px 24px 0 0;padding:22px;padding-bottom:calc(22px + var(--safe-bottom));overflow-y:auto;animation:slideUp .3s}
+#ask-box .panel-title h3{color:var(--purple)}
+#selected-text{background:#f1f5f9;padding:12px;border-radius:8px;border-right:4px solid var(--purple);margin-bottom:12px;font-size:13.5px;line-height:1.8;color:#475569;max-height:100px;overflow-y:auto}
+#user-question{width:100%;padding:14px;border:2px solid #e2e8f0;border-radius:12px;font-family:inherit;font-size:15px;resize:vertical;min-height:70px;margin-bottom:12px}
+#user-question:focus{outline:none;border-color:var(--purple)}
+.send-btn{background:var(--purple);color:#fff;border:none;padding:14px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;width:100%}
+#answer-area{background:#f8fafc;padding:16px;border-radius:12px;font-size:14.5px;line-height:2;min-height:70px;margin-top:15px;border-right:4px solid var(--success);display:none;white-space:pre-wrap;user-select:text;-webkit-user-select:text}
+#answer-area.show{display:block}
+#loading{display:none;text-align:center;padding:20px;color:var(--purple);font-weight:600;font-size:14px}
+#loading.show{display:block}
+.loader{display:inline-block;width:30px;height:30px;border:4px solid #e2e8f0;border-top-color:var(--purple);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#quiz-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:flex-end}
+#quiz-modal.active{display:flex}
+#quiz-box{background:#fff;border-radius:24px 24px 0 0;padding:22px;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:calc(22px + var(--safe-bottom));animation:slideUp .3s}
+#quiz-box h3{color:var(--primary);margin-bottom:15px;font-size:17px}
+#quiz-question{font-size:15.5px;font-weight:bold;margin-bottom:18px;line-height:1.8}
+.option{display:block;width:100%;padding:15px;margin-bottom:10px;background:#f1f5f9;border:2px solid #e2e8f0;border-radius:12px;text-align:right;font-family:inherit;font-size:14.5px;cursor:pointer;line-height:1.6}
+.option.correct{background:#d1fae5;border-color:var(--success)}
+.option.wrong{background:#fee2e2;border-color:var(--danger)}
+#feedback{font-weight:bold;text-align:center;margin-top:15px;font-size:15px}
+
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 22px;border-radius:30px;z-index:9999;font-family:inherit;font-size:13px;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,.3);animation:toastIn .3s;max-width:85vw;text-align:center}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+#welcome h1{font-size:24px;color:var(--primary);margin-bottom:18px}
+#welcome .tip{background:#dbeafe;padding:18px;border-radius:14px;border-right:4px solid var(--primary);color:#1e40af;line-height:2.1;font-size:15px;margin-top:15px}
+
+@media(min-width:1024px){
+  #content{max-width:1100px;padding:30px 40px 50px}
+  .slide-card{padding:32px}
+  .slide-title{font-size:24px}
+  .definition-box{font-size:17px;padding:20px 24px}
+  .slide-text{font-size:17px}
+  .slide-list li{font-size:16px;padding:16px 22px}
+  .slide-illustration svg{max-height:420px}
+}
+
+@media(max-width:768px){
+  #sidebar{
+    position:fixed;top:0;bottom:0;right:0;
+    width:290px;margin-right:0;
+    transform:translateX(100%);
+    transition:transform .3s;
+    z-index:95;padding-top:var(--safe-top);
+  }
+  #sidebar.open{transform:translateX(0);}
+  #sidebar h2{padding-top:20px}
+  #content{padding:14px 12px 30px}
+  .slide-card{padding:18px}
+  .slide-title{font-size:18px}
+  .slide-illustration{padding:15px 10px}
+}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button class="icon-btn dark" onclick="toggleSidebar()">☰</button>
+  <button class="icon-btn danger" onclick="toggleSpeak()" id="speak-btn" title="صوت محلي">🔊</button>
+  <button class="icon-btn cloud" onclick="toggleCloudSpeak()" id="cloud-speak-btn" title="صوت Google">☁️</button>
+  <h1 id="top-title">المدرس 📚</h1>
+  <button class="icon-btn warn" onclick="stopSpeak()">⏸️</button>
+  <button class="icon-btn purple" onclick="openVoicePanel()">🎙️</button>
+</div>
+
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<div id="layout">
+  <aside id="sidebar">
+    <h2>📚 الدروس</h2>
+    <div id="lesson-list"></div>
+  </aside>
+  <main id="main">
+    <div id="content">
+      <div id="welcome">
+        <h1>أهلاً بيك يا بطل 👋</h1>
+        <div class="tip">
+          <b>💡 إزاي تستخدم التطبيق؟</b>
+          <br>• كل درس معروض على شكل شرائح، اسحب لتحت لرؤية الباقي.
+          <br>• دوس <b>🔊</b> أو <b>☁️</b> لسماع الشرح كاملاً.
+          <br>• سيتم الانتقال تلقائياً من شريحة إلى التالية.
+          <br>• <b>اضغط مطولاً</b> على أي جملة، واسأل المدرس (بحث عبر الإنترنت).
+          <br>• دوس <b>☰</b> لاختيار درس آخر.
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="floating-actions">
+  <button class="float-btn ask" onclick="openAskModal()" title="اسأل المدرس">💡</button>
+  <button class="float-btn top" onclick="scrollToTop()" title="أعلى الصفحة">⬆️</button>
+</div>
+
+<div id="voice-panel" onclick="if(event.target===this)closeVoicePanel()">
+  <div id="voice-panel-box">
+    <div class="sheet-handle"></div>
+    <div class="panel-title">
+      <h3>🎙️ إعدادات الصوت</h3>
+      <button class="close-x" onclick="closeVoicePanel()">✕</button>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#475569;margin-bottom:8px">🔊 اختر صوت عربي:</div>
+    <div class="voice-list" id="voice-list"><div style="text-align:center;padding:20px;color:#94a3b8">جاري التحميل...</div></div>
+    <div style="font-size:13px;font-weight:700;color:#475569;margin:15px 0 8px">⚡ الإعدادات:</div>
+    <div class="slider-row">
+      <label>السرعة:</label>
+      <input type="range" id="rate-slider" min="0.5" max="1.5" step="0.05" value="0.9" oninput="updateRate(this.value)">
+      <span class="slider-value" id="rate-value">0.9</span>
+    </div>
+    <div class="slider-row">
+      <label>النغمة:</label>
+      <input type="range" id="pitch-slider" min="0.5" max="1.5" step="0.05" value="1" oninput="updatePitch(this.value)">
+      <span class="slider-value" id="pitch-value">1.0</span>
+    </div>
+    <button class="test-btn" onclick="testVoice()">🎧 جرّب الصوت</button>
+    <div class="help-box">
+      <b>💡 لتحسين الصوت:</b>
+      <br>• أندرويد: الإعدادات ← الإدارة العامة ← اللغة والإدخال ← تحويل النص إلى كلام ← Google TTS ← تثبيت بيانات صوتية ← عربي (السعودية)
+      <br>• آيفون: الإعدادات ← تسهيلات الاستخدام ← المحتوى المنطوق ← الأصوات ← العربية ← Majed
+    </div>
+  </div>
+</div>
+
+<div id="ask-modal" onclick="if(event.target===this)closeAskModal()">
+  <div id="ask-box">
+    <div class="sheet-handle"></div>
+    <div class="panel-title">
+      <h3>👨‍🏫 اسأل مدرسك</h3>
+      <button class="close-x" onclick="closeAskModal()">✕</button>
+    </div>
+    <div id="selected-text"></div>
+    <textarea id="user-question" placeholder="اكتب سؤالك هنا... (اختياري)"></textarea>
+    <button class="send-btn" onclick="askTeacher()">📩 إرسال السؤال</button>
+    <div id="loading"><div class="loader"></div><div>المدرس يبحث عن الإجابة...</div></div>
+    <div id="answer-area"></div>
+  </div>
+</div>
+
+<div id="quiz-modal">
+  <div id="quiz-box">
+    <div class="sheet-handle"></div>
+    <div class="panel-title">
+      <h3 id="quiz-title" style="color:var(--primary)">🎯 اختبر نفسك</h3>
+      <button class="close-x" onclick="closeQuiz()">✕</button>
+    </div>
+    <div id="quiz-question"></div>
+    <div id="quiz-options"></div>
+    <div id="feedback"></div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="test-btn" id="next-q-btn" style="display:none;background:var(--primary)" onclick="nextQuestion()">السؤال التالي ➡️</button>
+      <button class="test-btn" style="background:var(--danger)" onclick="closeQuiz()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   المنهج الكامل
+   ========================================================== */
+const curriculum = [
+{
+  id: 1, unit: "الوحدة 1",
+  title: "الدرس 1: البيانات والمعلومات والمعرفة",
+  slides: [
+    {
+      title: "البيانات (Data)",
+      teacher: "البيانات هي حقائق تمثل باستخدام الأرقام أو الأحرف أو الرموز، وليس لها معنى بمفردها. فمثلاً الأرقام خمسة عشر، وعشرون، وثلاثون، إذا رأيتها وحدها دون سياق، فلن تستطيع أن تفهم منها شيئاً.",
+      content: `
+        <div class="definition-box">
+          <span class="term">📊 التعريف:</span>
+          هي حقائق تمثل باستخدام الأرقام أو الأحرف أو الرموز، وليس لها معنى بمفردها.
+        </div>
+        <div class="slide-text"><b>مثال:</b> الأرقام 15، 20، 30 (مجرد أرقام بدون سياق).</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="70" r="28" fill="#fbbf24"/>
+          <text x="100" y="80" text-anchor="middle" font-size="28">🤔</text>
+          <text x="100" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">شخص مرتبك</text>
+          <text x="100" y="150" text-anchor="middle" font-size="11" fill="#64748b">لا يفهم شيئاً</text>
+          <path d="M 140 70 Q 180 50 210 70" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" fill="none"/>
+          <path d="M 140 90 Q 180 120 210 100" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,4" fill="none"/>
+          <g>
+            <circle cx="250" cy="45" r="26" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="250" y="52" text-anchor="middle" font-size="15" font-weight="bold" fill="#991b1b">15</text>
+            <text x="250" y="88" text-anchor="middle" font-size="20" fill="#ef4444">؟</text>
+          </g>
+          <g>
+            <circle cx="330" cy="100" r="26" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="330" y="107" text-anchor="middle" font-size="15" font-weight="bold" fill="#991b1b">20</text>
+            <text x="330" y="143" text-anchor="middle" font-size="20" fill="#ef4444">؟</text>
+          </g>
+          <g>
+            <circle cx="410" cy="55" r="26" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="410" y="62" text-anchor="middle" font-size="15" font-weight="bold" fill="#991b1b">30</text>
+            <text x="410" y="98" text-anchor="middle" font-size="20" fill="#ef4444">؟</text>
+          </g>
+          <g>
+            <circle cx="480" cy="120" r="26" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="480" y="127" text-anchor="middle" font-size="15" font-weight="bold" fill="#991b1b">38</text>
+            <text x="480" y="163" text-anchor="middle" font-size="20" fill="#ef4444">؟</text>
+          </g>
+          <g>
+            <circle cx="560" cy="80" r="26" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="560" y="87" text-anchor="middle" font-size="15" font-weight="bold" fill="#991b1b">40</text>
+            <text x="560" y="123" text-anchor="middle" font-size="20" fill="#ef4444">؟</text>
+          </g>
+          <text x="350" y="195" text-anchor="middle" font-size="14" font-weight="bold" fill="#991b1b">أرقام متناثرة بلا معنى</text>
+        </svg>
+      `
+    },
+    {
+      title: "المعلومات (Information)",
+      teacher: "وعندما نضيف سياقاً لهذه الأرقام، فإنها تتحول إلى معلومات. فإذا قلنا: سعر الطماطم خمسة عشر جنيهاً، وسعر الخيار عشرين جنيهاً، وسعر البطاطس ثلاثين جنيهاً، فقد أصبحت هذه الأرقام ذات معنى.",
+      content: `
+        <div class="definition-box">
+          <span class="term">📈 التعريف:</span>
+          هي بيانات لها معنى أو قيمة للمتلقي، وتُستخدم لاتخاذ القرار.
+        </div>
+        <div class="slide-text"><b>مثال:</b> "درجات الحرارة في القاهرة هذا الأسبوع 35، 40، 38".</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowM1" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+              <polygon points="0 0, 10 5, 0 10" fill="#64748b"/>
+            </marker>
+          </defs>
+          <rect x="20" y="30" width="160" height="100" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+          <text x="100" y="55" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">بيانات خام</text>
+          <text x="100" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#991b1b">15، 20، 30</text>
+          <text x="100" y="110" text-anchor="middle" font-size="10" fill="#7f1d1d">بلا سياق</text>
+          <path d="M 190 80 L 240 80" stroke="#64748b" stroke-width="3" marker-end="url(#arrowM1)"/>
+          <text x="215" y="70" text-anchor="middle" font-size="10" fill="#475569">+ سياق</text>
+          <rect x="250" y="30" width="430" height="100" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+          <text x="465" y="55" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">معلومات واضحة</text>
+          <g transform="translate(280,85)">
+            <text x="0" y="0" text-anchor="middle" font-size="30">🍅</text>
+            <text x="0" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">= 15</text>
+          </g>
+          <g transform="translate(370,85)">
+            <text x="0" y="0" text-anchor="middle" font-size="30">🥒</text>
+            <text x="0" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">= 20</text>
+          </g>
+          <g transform="translate(460,85)">
+            <text x="0" y="0" text-anchor="middle" font-size="30">🥔</text>
+            <text x="0" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">= 30</text>
+          </g>
+          <g transform="translate(550,85)">
+            <text x="0" y="0" text-anchor="middle" font-size="30">🥕</text>
+            <text x="0" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">= 38</text>
+          </g>
+          <g transform="translate(640,85)">
+            <text x="0" y="0" text-anchor="middle" font-size="30">🍎</text>
+            <text x="0" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">= 40</text>
+          </g>
+          <text x="350" y="175" text-anchor="middle" font-size="14" font-weight="bold" fill="#065f46">أرقام لها معنى وارتباط بأشياء محددة</text>
+        </svg>
+      `
+    },
+    {
+      title: "المعرفة (Knowledge)",
+      teacher: "المعرفة تأتي بعد المعلومات، حين نحلل وننظم هذه المعلومات لاتخاذ قرار أو حل مشكلة. فإذا قلنا: بما أن الحرارة مرتفعة، فيجب تشغيل المكيف وشرب المزيد من الماء، فهذه معرفة.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🧠 التعريف:</span>
+          هي المعلومات التي تم تحليلها وتنظيمها بشكل منهجي للمساعدة في حل المشكلات.
+        </div>
+        <div class="slide-text"><b>مثال:</b> "بما أن الحرارة عالية، يجب تشغيل التكييف وشرب مياه كثيرة".</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="350" cy="60" r="45" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+          <text x="350" y="75" text-anchor="middle" font-size="48">💡</text>
+          <line x1="350" y1="10" x2="350" y2="0" stroke="#f59e0b" stroke-width="3"/>
+          <line x1="300" y1="30" x2="285" y2="15" stroke="#f59e0b" stroke-width="3"/>
+          <line x1="400" y1="30" x2="415" y2="15" stroke="#f59e0b" stroke-width="3"/>
+          <text x="350" y="130" text-anchor="middle" font-size="16" font-weight="bold" fill="#92400e">قرار مبني على تحليل</text>
+          <rect x="150" y="155" width="400" height="70" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+          <text x="350" y="180" text-anchor="middle" font-size="13" fill="#065f46">🌡️ درجة الحرارة 40° = عالية</text>
+          <text x="350" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">❄️ القرار: شغّل المكيف + اشرب ماء</text>
+        </svg>
+      `
+    },
+    {
+      title: "خصائص المعلومات",
+      teacher: "للمعلومات ثلاث خصائص مهمة: أولاً لا يمكن محوها بالكامل بمجرد إنشائها. ثانياً يمكن نسخها بسهولة بكميات كبيرة. ثالثاً تسهل نشرها عبر وسائل الإعلام والإنترنت.",
+      content: `
+        <ul class="slide-list">
+          <li><b>عدم القابلية للمحو:</b> لا يمكن محوها بالكامل بمجرد إنشائها.</li>
+          <li><b>سهولة النسخ:</b> إمكانية نسخها بسهولة بكميات كبيرة.</li>
+          <li><b>سهولة النشر:</b> سهولة توصيلها ونشرها عبر وسائل الإعلام الجماهيرية.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(50,30)">
+            <circle cx="60" cy="60" r="45" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="60" y="75" text-anchor="middle" font-size="40">✋</text>
+            <text x="60" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">لا يمكن محوها</text>
+            <text x="60" y="150" text-anchor="middle" font-size="11" fill="#64748b">بمجرد إنشائها</text>
+          </g>
+          <g transform="translate(280,30)">
+            <circle cx="60" cy="60" r="45" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="60" y="75" text-anchor="middle" font-size="40">📋</text>
+            <text x="60" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">نسخ بلا حدود</text>
+            <text x="60" y="150" text-anchor="middle" font-size="11" fill="#64748b">بكميات كبيرة</text>
+          </g>
+          <g transform="translate(510,30)">
+            <circle cx="60" cy="60" r="45" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="60" y="75" text-anchor="middle" font-size="40">🌐</text>
+            <text x="60" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">انتشار سريع</text>
+            <text x="60" y="150" text-anchor="middle" font-size="11" fill="#64748b">عبر الإعلام والإنترنت</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "أنواع المعلومات",
+      teacher: "تنقسم المعلومات إلى نوعين: المعلومات الأولية وهي التي نحصل عليها من خلال التجربة الشخصية المباشرة، والمعلومات الثانوية وهي التي نحصل عليها من طرف ثالث مثل الكتب والصحف، وهذه تحتاج إلى التحقق المتبادل.",
+      content: `
+        <ul class="slide-list">
+          <li><b>المعلومات الأولية:</b> يتم الحصول عليها من خلال التجربة الشخصية المباشرة أو البحث والتجارب.</li>
+          <li><b>المعلومات الثانوية:</b> يتم الحصول عليها من طرف ثالث (كتب، صحف، تلفزيون).</li>
+          <li><b>ملاحظة:</b> المعلومات الثانوية تحتاج إلى <b>التحقق المتبادل (Cross-checking)</b>.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(30,30)">
+            <rect x="0" y="0" width="290" height="180" rx="14" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="145" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">🔬 مصدر مباشر</text>
+            <circle cx="90" cy="85" r="25" fill="#3b82f6"/>
+            <text x="90" y="95" text-anchor="middle" font-size="26">🧑‍🔬</text>
+            <text x="90" y="125" text-anchor="middle" font-size="11" fill="#1e40af">تجربة شخصية</text>
+            <text x="190" y="95" text-anchor="middle" font-size="30">🧪</text>
+            <text x="190" y="125" text-anchor="middle" font-size="11" fill="#1e40af">ملاحظة مباشرة</text>
+            <text x="145" y="160" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">معلومات أولية</text>
+          </g>
+          <g transform="translate(380,30)">
+            <rect x="0" y="0" width="290" height="180" rx="14" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="145" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">📚 طرف ثالث</text>
+            <text x="70" y="95" text-anchor="middle" font-size="30">📖</text>
+            <text x="145" y="95" text-anchor="middle" font-size="30">📰</text>
+            <text x="220" y="95" text-anchor="middle" font-size="30">📺</text>
+            <text x="145" y="130" text-anchor="middle" font-size="11" fill="#92400e">كتب، صحف، تلفزيون</text>
+            <text x="145" y="160" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">معلومات ثانوية</text>
+          </g>
+          <text x="350" y="228" text-anchor="middle" font-size="12" font-weight="bold" fill="#6d28d9">🔍 تحتاج إلى تحقق متبادل</text>
+        </svg>
+      `
+    }
+  ],
+  question: "الأرقام 35 و40 و38 وحدها (بدون سياق) تعتبر ماذا؟",
+  options: ["معلومات", "بيانات", "معرفة"],
+  correct: 1
+},
+{
+  id: 2, unit: "الوحدة 1",
+  title: "الدرس 2: أخلاقيات المعلومات",
+  slides: [
+    {
+      title: "أخلاقيات المعلومات",
+      teacher: "أخلاقيات المعلومات هي المفاهيم والتوجهات الأساسية اللازمة للقيام بأنشطة مناسبة في مجتمع المعلومات، بغض النظر عن وجود قوانين أو عدم وجودها.",
+      content: `
+        <div class="definition-box">
+          <span class="term">⚖️ التعريف:</span>
+          هي المفاهيم والتوجهات الأساسية اللازمة للقيام بأنشطة مناسبة في مجتمع المعلومات، بغض النظر عن وجود أو عدم وجود قوانين.
+        </div>
+        <div class="slide-text"><b>المبدأ:</b> أنت تلتزم بالأخلاق لأنك مقتنع بها، وليس خوفاً من العقاب.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="350,40 370,80 330,80" fill="#8b5cf6"/>
+          <rect x="345" y="80" width="10" height="80" fill="#6d28d9"/>
+          <line x1="280" y1="60" x2="420" y2="60" stroke="#6d28d9" stroke-width="3"/>
+          <line x1="280" y1="60" x2="280" y2="100" stroke="#6d28d9" stroke-width="2"/>
+          <line x1="420" y1="60" x2="420" y2="100" stroke="#6d28d9" stroke-width="2"/>
+          <ellipse cx="280" cy="105" rx="40" ry="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+          <text x="280" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">القوانين</text>
+          <text x="280" y="148" text-anchor="middle" font-size="10" fill="#64748b">إلزامية</text>
+          <ellipse cx="420" cy="105" rx="40" ry="8" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+          <text x="420" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">الأخلاق</text>
+          <text x="420" y="148" text-anchor="middle" font-size="10" fill="#64748b">اختيارية لكنها الأسمى</text>
+          <ellipse cx="350" cy="165" rx="60" ry="10" fill="#8b5cf6" opacity="0.3"/>
+          <text x="350" y="210" text-anchor="middle" font-size="14" font-weight="bold" fill="#6d28d9">الأخلاق تتجاوز القوانين</text>
+        </svg>
+      `
+    },
+    {
+      title: "قواعد نشر المعلومات",
+      teacher: "عند نشر أي محتوى على الإنترنت، يجب الالتزام بالقواعد التالية: عدم مشاركة صور الآخرين دون إذنهم، وعدم تسريب بياناتهم، واحترام حقوق المؤلف، وعدم التنمر الإلكتروني.",
+      content: `
+        <ul class="slide-list">
+          <li>عدم مشاركة الصور أو مقاطع الفيديو التي يمتلكها الآخرون دون إذن.</li>
+          <li>عدم تسريب المعلومات الشخصية للآخرين.</li>
+          <li>احترام حقوق المؤلف (Copyright).</li>
+          <li>عدم انتهاك خصوصية الآخرين.</li>
+          <li>عدم التنمر الإلكتروني (Cyber Bullying).</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(350,60)">
+            <circle cx="0" cy="0" r="50" fill="#8b5cf6"/>
+            <text x="0" y="15" text-anchor="middle" font-size="48" fill="#fff">⚖️</text>
+          </g>
+          <text x="350" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="#6d28d9">قواعد النشر الآمن</text>
+          <g transform="translate(50,150)">
+            <circle cx="40" cy="40" r="32" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="40" y="52" text-anchor="middle" font-size="32">🚫</text>
+            <text x="40" y="90" text-anchor="middle" font-size="11" font-weight="bold" fill="#991b1b">لا للصور</text>
+          </g>
+          <g transform="translate(220,150)">
+            <circle cx="40" cy="40" r="32" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="40" y="52" text-anchor="middle" font-size="32">🔒</text>
+            <text x="40" y="90" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">احترم الخصوصية</text>
+          </g>
+          <g transform="translate(390,150)">
+            <circle cx="40" cy="40" r="32" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="40" y="52" text-anchor="middle" font-size="32">©️</text>
+            <text x="40" y="90" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">حقوق المؤلف</text>
+          </g>
+          <g transform="translate(560,150)">
+            <circle cx="40" cy="40" r="32" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="40" y="52" text-anchor="middle" font-size="32">🛡️</text>
+            <text x="40" y="90" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">لا للتنمر</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "العلامة الجغرافية (Geotagging)",
+      teacher: "العلامة الجغرافية هي معلومات خطوط الطول والعرض المضمنة في الصور ومقاطع الفيديو الملتقطة بالهواتف الذكية. وخطورتها تكمن في إمكانية تحديد موقع منزلك بدقة.",
+      content: `
+        <div class="definition-box">
+          <span class="term">📍 التعريف:</span>
+          معلومات تتضمن خطوط الطول والعرض المضمنة في الصور ومقاطع الفيديو الملتقطة بالهواتف الذكية.
+        </div>
+        <div class="slide-text"><b>الخطر:</b> يمكن لأي شخص معرفة موقع منزلك بدقة عند نشر الصورة.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(40,40)">
+            <rect x="0" y="0" width="180" height="140" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+            <text x="90" y="40" text-anchor="middle" font-size="13" font-weight="bold" fill="#4338ca">📸 صورة</text>
+            <text x="90" y="90" text-anchor="middle" font-size="40">🏠</text>
+            <text x="90" y="125" text-anchor="middle" font-size="10" fill="#4338ca">Lat: 30.04</text>
+            <text x="90" y="138" text-anchor="middle" font-size="10" fill="#4338ca">Long: 31.23</text>
+          </g>
+          <path d="M 235 110 L 285 110" stroke="#ef4444" stroke-width="3"/>
+          <polygon points="285,105 305,110 285,115" fill="#ef4444"/>
+          <g transform="translate(320,40)">
+            <rect x="0" y="0" width="180" height="140" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="90" y="40" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">🗺️ خريطة</text>
+            <circle cx="90" cy="85" r="20" fill="#ef4444" opacity="0.3"/>
+            <circle cx="90" cy="85" r="10" fill="#ef4444"/>
+            <text x="90" y="128" text-anchor="middle" font-size="11" font-weight="bold" fill="#991b1b">موقع منزلك!</text>
+          </g>
+          <g transform="translate(530,80)">
+            <circle cx="60" cy="45" r="45" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+            <text x="60" y="62" text-anchor="middle" font-size="48">⚠️</text>
+            <text x="60" y="115" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">خطر</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "المعلومات المضللة والشائعات",
+      teacher: "هناك نوع من المعلومات الكاذبة يتم نشره عمداً، أو شائعات لا أساس لها، وهذا ما نسميه المعلومات المضللة. ولذلك يجب التحقق من أي معلومة قبل نشرها.",
+      content: `
+        <div class="definition-box">
+          <span class="term">⚠️ التعريف:</span>
+          معلومات كاذبة يتم نشرها عمداً أو شائعات لا أساس لها.
+        </div>
+        <div class="slide-text"><b>النصيحة:</b> تحقق من المعلومة قبل نشرها، ولا تنشر إلا ما تتأكد من صحته.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(80,30)">
+            <rect x="0" y="0" width="240" height="130" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="120" y="35" text-anchor="middle" font-size="30">📰</text>
+            <text x="120" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">❌ خبر كاذب</text>
+            <text x="120" y="95" text-anchor="middle" font-size="11" fill="#7f1d1d">شائعة تنتشر بسرعة</text>
+          </g>
+          <text x="350" y="105" text-anchor="middle" font-size="40">🔍</text>
+          <g transform="translate(390,30)">
+            <rect x="0" y="0" width="240" height="130" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="120" y="35" text-anchor="middle" font-size="30">✅</text>
+            <text x="120" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">معلومة موثقة</text>
+            <text x="120" y="95" text-anchor="middle" font-size="11" fill="#065f46">تحققنا من المصدر</text>
+          </g>
+        </svg>
+      `
+    }
+  ],
+  question: "ما اسم الميزة التي تحدد مكان التصوير في الصور؟",
+  options: ["حقوق النشر", "العلامة الجغرافية (Geotagging)", "أخلاقيات المعلومات"],
+  correct: 1
+},
+{
+  id: 3, unit: "الوحدة 2",
+  title: "الدرس 1: البيانات الشخصية",
+  slides: [
+    {
+      title: "البيانات الشخصية",
+      teacher: "البيانات الشخصية هي كل بيان أو معلومة تتعلق بشخص طبيعي محدد، أو يمكن تحديده بشكل مباشر أو غير مباشر، من خلال الربط مع بيانات أخرى.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🔐 التعريف:</span>
+          هي كل بيان أو معلومة تتعلق بشخص طبيعي محدد أو يمكن تحديده بشكل مباشر أو غير مباشر.
+        </div>
+        <div class="slide-text"><b>أمثلة:</b> الاسم، العنوان، تاريخ الميلاد، رقم الهاتف، الصورة، بصمة الإصبع، قزحية العين.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(50,40)">
+            <rect x="0" y="0" width="180" height="130" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+            <circle cx="55" cy="50" r="25" fill="#6366f1"/>
+            <text x="55" y="60" text-anchor="middle" font-size="26">👤</text>
+            <text x="100" y="40" font-size="11" font-weight="bold" fill="#4338ca">الاسم</text>
+            <text x="100" y="60" font-size="11" fill="#4338ca">الميلاد</text>
+            <text x="100" y="80" font-size="11" fill="#4338ca">الهاتف</text>
+            <text x="90" y="115" text-anchor="middle" font-size="11" font-weight="bold" fill="#4338ca">بطاقة هوية</text>
+          </g>
+          <g transform="translate(260,40)">
+            <rect x="0" y="0" width="180" height="130" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="90" y="70" text-anchor="middle" font-size="55">📸</text>
+            <text x="90" y="115" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">الصورة الشخصية</text>
+          </g>
+          <g transform="translate(470,40)">
+            <rect x="0" y="0" width="180" height="130" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="90" y="70" text-anchor="middle" font-size="55">👆</text>
+            <text x="90" y="115" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">بصمة الإصبع</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "أنواع البيانات الشخصية",
+      teacher: "تنقسم البيانات الشخصية إلى ثلاثة أنواع: البيانات الأساسية، وأرقام الهوية، والبيانات الحساسة.",
+      content: `
+        <ul class="slide-list">
+          <li><b>البيانات الأساسية:</b> الاسم، العنوان، تاريخ الميلاد، النوع.</li>
+          <li><b>أرقام الهوية الشخصية:</b> جوازات السفر، رخص القيادة، الرقم القومي.</li>
+          <li><b>البيانات الشخصية الحساسة:</b> العرق، الديانة، الآراء السياسية، الحالة الصحية، السجل الجنائي.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(40,30)">
+            <rect x="0" y="0" width="200" height="180" rx="14" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="100" y="35" text-anchor="middle" font-size="20">📝</text>
+            <text x="100" y="65" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">أساسية</text>
+            <line x1="30" y1="80" x2="170" y2="80" stroke="#93c5fd" stroke-dasharray="3"/>
+            <text x="100" y="105" text-anchor="middle" font-size="12" fill="#1e40af">الاسم</text>
+            <text x="100" y="125" text-anchor="middle" font-size="12" fill="#1e40af">العنوان</text>
+            <text x="100" y="145" text-anchor="middle" font-size="12" fill="#1e40af">تاريخ الميلاد</text>
+            <text x="100" y="165" text-anchor="middle" font-size="12" fill="#1e40af">النوع</text>
+          </g>
+          <g transform="translate(250,30)">
+            <rect x="0" y="0" width="200" height="180" rx="14" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="100" y="35" text-anchor="middle" font-size="20">🆔</text>
+            <text x="100" y="65" text-anchor="middle" font-size="14" font-weight="bold" fill="#065f46">أرقام هوية</text>
+            <line x1="30" y1="80" x2="170" y2="80" stroke="#6ee7b7" stroke-dasharray="3"/>
+            <text x="100" y="105" text-anchor="middle" font-size="12" fill="#065f46">رقم قومي</text>
+            <text x="100" y="125" text-anchor="middle" font-size="12" fill="#065f46">جواز سفر</text>
+            <text x="100" y="145" text-anchor="middle" font-size="12" fill="#065f46">رخصة قيادة</text>
+          </g>
+          <g transform="translate(460,30)">
+            <rect x="0" y="0" width="200" height="180" rx="14" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="100" y="35" text-anchor="middle" font-size="20">⚠️</text>
+            <text x="100" y="65" text-anchor="middle" font-size="14" font-weight="bold" fill="#991b1b">حساسة</text>
+            <line x1="30" y1="80" x2="170" y2="80" stroke="#fca5a5" stroke-dasharray="3"/>
+            <text x="100" y="105" text-anchor="middle" font-size="12" fill="#991b1b">الديانة</text>
+            <text x="100" y="125" text-anchor="middle" font-size="12" fill="#991b1b">الحالة الصحية</text>
+            <text x="100" y="145" text-anchor="middle" font-size="12" fill="#991b1b">السجل الجنائي</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "قانون حماية البيانات الشخصية",
+      teacher: "لحماية بياناتك، يوجد قانون يسمى قانون حماية البيانات الشخصية، وقاعدته الأساسية: أنه لا يجوز جمع بياناتك أو مشاركتها بدون موافقتك الصريحة.",
+      content: `
+        <div class="definition-box">
+          <span class="term">⚖️ التعريف:</span>
+          قانون يحدد القواعد الأساسية لجمع ومعالجة وتخزين ونقل البيانات الشخصية.
+        </div>
+        <div class="slide-text"><b>القاعدة:</b> لا يجوز جمع أو معالجة أو مشاركة البيانات الشخصية إلا بعد موافقة صريحة من صاحب البيانات.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(80,50)">
+            <circle cx="60" cy="40" r="35" fill="#3b82f6"/>
+            <text x="60" y="52" text-anchor="middle" font-size="38">👤</text>
+            <text x="60" y="100" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">صاحب البيانات</text>
+          </g>
+          <g transform="translate(230,60)">
+            <rect x="0" y="0" width="140" height="100" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="70" y="40" text-anchor="middle" font-size="36">✅</text>
+            <text x="70" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">موافقة</text>
+            <text x="70" y="90" text-anchor="middle" font-size="10" fill="#065f46">صريحة ومسبقة</text>
+          </g>
+          <path d="M 385 110 L 425 110" stroke="#10b981" stroke-width="3"/>
+          <polygon points="425,105 445,110 425,115" fill="#10b981"/>
+          <g transform="translate(460,50)">
+            <circle cx="60" cy="40" r="35" fill="#10b981"/>
+            <text x="60" y="52" text-anchor="middle" font-size="38">🏢</text>
+            <text x="60" y="100" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">الجهة</text>
+          </g>
+          <text x="350" y="200" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">لا يمكن جمع أو مشاركة البيانات بدون موافقة</text>
+        </svg>
+      `
+    },
+    {
+      title: "حالات توفير البيانات دون موافقة",
+      teacher: "هناك خمس حالات استثنائية يُسمح فيها بتوفير البيانات دون موافقة الفرد: عند وجود قانون، أو لحماية الأمن القومي، أو لحماية حياة الشخص، أو لتنفيذ حكم قضائي، أو لإتمام عقد.",
+      content: `
+        <ul class="slide-list">
+          <li>عندما يكون التزويد مستنداً إلى قوانين ولوائح.</li>
+          <li>عندما يكون ذلك لازماً لحماية الأمن القومي أو مصلحة عامة.</li>
+          <li>عندما يكون ذلك ضرورياً لحماية حياة الشخص أو صحته أو ممتلكاته.</li>
+          <li>عندما يكون ذلك ضرورياً لتنفيذ حكم قضائي أو طلب من جهة تحقيق.</li>
+          <li>عندما يكون ضرورياً لإتمام عقد مع الشخص أو لحماية حقوقه.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(20,30)">
+            <rect x="0" y="0" width="128" height="170" rx="12" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="64" y="55" text-anchor="middle" font-size="36">📜</text>
+            <text x="64" y="95" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">قانون</text>
+            <text x="64" y="115" text-anchor="middle" font-size="10" fill="#1e40af">أو لائحة</text>
+          </g>
+          <g transform="translate(158,30)">
+            <rect x="0" y="0" width="128" height="170" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="64" y="55" text-anchor="middle" font-size="36">🛡️</text>
+            <text x="64" y="95" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">الأمن</text>
+            <text x="64" y="115" text-anchor="middle" font-size="10" fill="#065f46">القومي</text>
+          </g>
+          <g transform="translate(296,30)">
+            <rect x="0" y="0" width="128" height="170" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="64" y="55" text-anchor="middle" font-size="36">❤️</text>
+            <text x="64" y="95" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">حماية</text>
+            <text x="64" y="115" text-anchor="middle" font-size="10" fill="#92400e">حياة الشخص</text>
+          </g>
+          <g transform="translate(434,30)">
+            <rect x="0" y="0" width="128" height="170" rx="12" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+            <text x="64" y="55" text-anchor="middle" font-size="36">⚖️</text>
+            <text x="64" y="95" text-anchor="middle" font-size="11" font-weight="bold" fill="#5b21b6">حكم</text>
+            <text x="64" y="115" text-anchor="middle" font-size="10" fill="#5b21b6">قضائي</text>
+          </g>
+          <g transform="translate(572,30)">
+            <rect x="0" y="0" width="110" height="170" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="55" y="55" text-anchor="middle" font-size="36">📝</text>
+            <text x="55" y="95" text-anchor="middle" font-size="11" font-weight="bold" fill="#991b1b">إتمام</text>
+            <text x="55" y="115" text-anchor="middle" font-size="10" fill="#991b1b">عقد</text>
+          </g>
+          <text x="350" y="225" text-anchor="middle" font-size="13" font-weight="bold" fill="#475569">خمس حالات فقط يُسمح فيها بالكشف عن البيانات</text>
+        </svg>
+      `
+    }
+  ],
+  question: "الديانة والحالة الصحية والسجل الجنائي تعتبر ماذا؟",
+  options: ["بيانات أساسية", "أرقام هوية", "بيانات شخصية حساسة"],
+  correct: 2
+},
+{
+  id: 4, unit: "الوحدة 2",
+  title: "الدرس 2: حقوق الملكية الفكرية",
+  slides: [
+    {
+      title: "حقوق الملكية الفكرية",
+      teacher: "حقوق الملكية الفكرية هي حقوق تحمي نتاج الإبداع الفكري البشري في المجالات الأدبية والفنية والعلمية والتجارية.",
+      content: `
+        <div class="definition-box">
+          <span class="term">💡 التعريف:</span>
+          حقوق تحمي نتاج الإبداع الفكري البشري في المجالات الأدبية والفنية والعلمية والتجارية.
+        </div>
+        <div class="slide-text">تشمل: <b>حقوق المؤلف</b> و<b>الحقوق المجاورة</b> و<b>حقوق الملكية الصناعية</b>.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(280,60)">
+            <circle cx="70" cy="50" r="50" fill="#8b5cf6"/>
+            <text x="70" y="65" text-anchor="middle" font-size="55">💡</text>
+          </g>
+          <text x="350" y="145" text-anchor="middle" font-size="14" font-weight="bold" fill="#6d28d9">حقوق الملكية الفكرية</text>
+          <line x1="280" y1="110" x2="150" y2="180" stroke="#6d28d9" stroke-width="2"/>
+          <line x1="420" y1="110" x2="550" y2="180" stroke="#6d28d9" stroke-width="2"/>
+          <g transform="translate(60,175)">
+            <rect x="0" y="0" width="180" height="45" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="90" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">©️ حقوق المؤلف</text>
+          </g>
+          <g transform="translate(460,175)">
+            <rect x="0" y="0" width="180" height="45" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="90" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">⚙️ الملكية الصناعية</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "حقوق الملكية الصناعية",
+      teacher: "حقوق الملكية الصناعية تحمي الابتكارات المتعلقة بالصناعة والتجارة، وتشمل الاختراعات، والرسوم والنماذج الصناعية، والعلامات التجارية. وتشترط مبدأ الشكلية، أي التسجيل.",
+      content: `
+        <div class="definition-box">
+          <span class="term">⚙️ التعريف:</span>
+          هي الحقوق التي تحمي الابتكارات المتعلقة بالنشاط الصناعي والتجاري.
+        </div>
+        <div class="slide-text"><b>مبدأ الشكلية (Formality):</b> تشترط التسجيل لدى الجهة المختصة.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(40,50)">
+            <rect x="0" y="30" width="140" height="90" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <polygon points="30,30 30,0 60,15 60,30" fill="#f59e0b"/>
+            <polygon points="80,30 80,0 110,15 110,30" fill="#f59e0b"/>
+            <text x="70" y="80" text-anchor="middle" font-size="30">🏭</text>
+            <text x="70" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">مصنع</text>
+          </g>
+          <g transform="translate(230,50)">
+            <rect x="0" y="30" width="140" height="90" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="70" y="90" text-anchor="middle" font-size="40">⚙️</text>
+            <text x="70" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">اختراع</text>
+          </g>
+          <g transform="translate(420,50)">
+            <rect x="0" y="30" width="140" height="90" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="70" y="90" text-anchor="middle" font-size="40">™️</text>
+            <text x="70" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">علامة تجارية</text>
+          </g>
+          <g transform="translate(600,80)">
+            <text x="0" y="30" text-anchor="middle" font-size="50">📝</text>
+            <text x="0" y="100" text-anchor="middle" font-size="11" font-weight="bold" fill="#6d28d9">لازم تسجيل</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "مدد حماية حقوق الملكية الصناعية",
+      teacher: "كل نوع من حقوق الملكية الصناعية له مدة حماية معينة، فبراءات الاختراع عشرون سنة، ونموذج المنفعة سبع سنوات، والرسوم والنماذج الصناعية عشر سنوات، والعلامة التجارية عشر سنوات.",
+      content: `
+        <ul class="slide-list">
+          <li><b>براءات الاختراع:</b> 20 سنة من تاريخ التقديم.</li>
+          <li><b>نموذج المنفعة:</b> 7 سنوات من تاريخ التقديم.</li>
+          <li><b>الرسوم والنماذج الصناعية:</b> 10 سنوات.</li>
+          <li><b>العلامة التجارية:</b> 10 سنوات من تاريخ التسجيل.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(30,30)">
+            <rect x="0" y="0" width="150" height="170" rx="12" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="75" y="50" text-anchor="middle" font-size="40">🔬</text>
+            <text x="75" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">براءة اختراع</text>
+            <rect x="30" y="110" width="90" height="30" rx="8" fill="#3b82f6"/>
+            <text x="75" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff">20 سنة</text>
+          </g>
+          <g transform="translate(195,30)">
+            <rect x="0" y="0" width="150" height="170" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="75" y="50" text-anchor="middle" font-size="40">🔧</text>
+            <text x="75" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">نموذج منفعة</text>
+            <rect x="30" y="110" width="90" height="30" rx="8" fill="#10b981"/>
+            <text x="75" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff">7 سنوات</text>
+          </g>
+          <g transform="translate(360,30)">
+            <rect x="0" y="0" width="150" height="170" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="75" y="50" text-anchor="middle" font-size="40">🎨</text>
+            <text x="75" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">رسم صناعي</text>
+            <rect x="30" y="110" width="90" height="30" rx="8" fill="#f59e0b"/>
+            <text x="75" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff">10 سنوات</text>
+          </g>
+          <g transform="translate(525,30)">
+            <rect x="0" y="0" width="150" height="170" rx="12" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+            <text x="75" y="50" text-anchor="middle" font-size="40">™️</text>
+            <text x="75" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#5b21b6">علامة تجارية</text>
+            <rect x="30" y="110" width="90" height="30" rx="8" fill="#8b5cf6"/>
+            <text x="75" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff">10 سنوات</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "حقوق المؤلف (Copyrights)",
+      teacher: "حقوق المؤلف تتعلق بالإبداعات الفنية مثل الروايات والأفلام واللوحات والموسيقى وبرامج الحاسوب. وميزتها أنها لا تحتاج إلى تسجيل، إذ تنشأ الحقوق بمجرد إنشاء العمل، ومدة الحماية فيها خمسون سنة بعد وفاة المبدع.",
+      content: `
+        <div class="definition-box">
+          <span class="term">©️ التعريف:</span>
+          حقوق تتعلق بالأنشطة الإبداعية في الفنون.
+        </div>
+        <div class="slide-text"><b>مبدأ عدم التسجيل:</b> تنشأ الحقوق في لحظة إنشاء العمل.</div>
+        <div class="slide-text"><b>مدة الحماية:</b> 50 سنة بعد وفاة المبدع.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(60,50)">
+            <circle cx="50" cy="40" r="30" fill="#8b5cf6"/>
+            <text x="50" y="52" text-anchor="middle" font-size="34">✍️</text>
+            <text x="50" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#5b21b6">الكاتب</text>
+          </g>
+          <path d="M 145 90 L 195 90" stroke="#8b5cf6" stroke-width="3"/>
+          <polygon points="195,85 215,90 195,95" fill="#8b5cf6"/>
+          <g transform="translate(230,40)">
+            <rect x="0" y="0" width="200" height="110" rx="12" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+            <text x="100" y="45" text-anchor="middle" font-size="34">📖</text>
+            <text x="100" y="80" text-anchor="middle" font-size="13" font-weight="bold" fill="#5b21b6">العمل الإبداعي</text>
+            <text x="100" y="100" text-anchor="middle" font-size="10" fill="#7c3aed">© محمي تلقائياً</text>
+          </g>
+          <g transform="translate(480,50)">
+            <circle cx="60" cy="50" r="45" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="60" y="62" text-anchor="middle" font-size="40">⏰</text>
+            <text x="60" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#065f46">50 سنة</text>
+            <text x="60" y="140" text-anchor="middle" font-size="10" fill="#065f46">بعد وفاة المبدع</text>
+          </g>
+          <text x="350" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="#5b21b6">لا تحتاج تسجيل • تنشأ بمجرد إنشاء العمل</text>
+        </svg>
+      `
+    }
+  ],
+  question: "كم مدة حماية حقوق المؤلف بعد وفاته؟",
+  options: ["20 سنة", "50 سنة", "10 سنوات"],
+  correct: 1
+},
+{
+  id: 5, unit: "الوحدة 3",
+  title: "الدرس 1: أمن المعلومات",
+  slides: [
+    {
+      title: "أمن المعلومات",
+      teacher: "أمن المعلومات هو عملية إدارة المعلومات بشكل صحيح والحفاظ عليها آمنة. وكما أن لمنزلك باباً وقفلاً، فكذلك المعلومات تحتاج إلى حماية.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🔐 التعريف:</span>
+          هو عملية إدارة المعلومات بشكل صحيح والحفاظ عليها آمنة.
+        </div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(50,30)">
+            <polygon points="70,0 140,40 0,40" fill="#f59e0b"/>
+            <rect x="10" y="40" width="120" height="90" fill="#fbbf24" stroke="#92400e" stroke-width="2"/>
+            <rect x="55" y="70" width="30" height="60" fill="#78350f"/>
+            <circle cx="78" cy="100" r="3" fill="#fbbf24"/>
+            <text x="70" y="160" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">بيت محمي</text>
+          </g>
+          <text x="280" y="110" text-anchor="middle" font-size="30">⇄</text>
+          <g transform="translate(400,30)">
+            <rect x="0" y="0" width="120" height="130" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <rect x="20" y="20" width="80" height="20" rx="4" fill="#3b82f6"/>
+            <rect x="20" y="50" width="80" height="20" rx="4" fill="#3b82f6"/>
+            <rect x="20" y="80" width="80" height="20" rx="4" fill="#3b82f6"/>
+            <text x="60" y="125" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">خادم</text>
+          </g>
+          <g transform="translate(580,60)">
+            <circle cx="40" cy="40" r="40" fill="#10b981"/>
+            <text x="40" y="55" text-anchor="middle" font-size="42">🔒</text>
+            <text x="40" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">حماية</text>
+          </g>
+          <text x="350" y="190" text-anchor="middle" font-size="12" font-weight="bold" fill="#475569">المعلومات تحتاج حماية مثل البيت تماماً</text>
+        </svg>
+      `
+    },
+    {
+      title: "العناصر الثلاثة لأمن المعلومات",
+      teacher: "العناصر الثلاثة لأمن المعلومات هي: السرية، أي أن الأفراد المصرح لهم فقط يمكنهم الوصول إلى المعلومات. والسلامة، أي عدم تدمير المعلومات أو العبث بها. والتوافرية، أي إمكانية الوصول إلى المعلومات وقت الحاجة إليها.",
+      content: `
+        <ul class="slide-list">
+          <li><b>السرية (Confidentiality):</b> وصول الأفراد المصرّح لهم فقط.</li>
+          <li><b>السلامة (Integrity):</b> عدم تدمير أو العبث بالمعلومات.</li>
+          <li><b>التوافرية (Availability):</b> الوصول للمعلومات وقت الحاجة.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="350,40 570,290 130,290" fill="#fee2e2" stroke="#ef4444" stroke-width="3"/>
+          <text x="350" y="200" text-anchor="middle" font-size="20" font-weight="bold" fill="#991b1b">أمن</text>
+          <text x="350" y="225" text-anchor="middle" font-size="20" font-weight="bold" fill="#991b1b">المعلومات</text>
+          <circle cx="350" cy="40" r="42" fill="#3b82f6"/>
+          <text x="350" y="55" text-anchor="middle" font-size="42" fill="#fff">🔒</text>
+          <text x="350" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">السرية</text>
+          <circle cx="130" cy="290" r="42" fill="#10b981"/>
+          <text x="130" y="305" text-anchor="middle" font-size="42" fill="#fff">✅</text>
+          <text x="130" y="355" text-anchor="middle" font-size="14" font-weight="bold" fill="#065f46">السلامة</text>
+          <circle cx="570" cy="290" r="42" fill="#f59e0b"/>
+          <text x="570" y="305" text-anchor="middle" font-size="42" fill="#fff">⚡</text>
+          <text x="570" y="355" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">التوافرية</text>
+        </svg>
+      `
+    },
+    {
+      title: "مثال يوضح الفرق",
+      teacher: "مثال يوضح الفرق: إذا اطلع شخص على رسائلك، فهذا خطر على السرية. وإذا غيّر أحدهم درجاتك، فهذا خطر على السلامة. وإذا تعطل الخادم، فهذا خطر على التوافرية.",
+      content: `
+        <ul class="slide-list">
+          <li>إذا اطلع شخص على رسائلك ← خطر على <b>السرية</b>.</li>
+          <li>إذا غيّر أحدهم درجاتك ← خطر على <b>السلامة</b>.</li>
+          <li>إذا تعطل الخادم ← خطر على <b>التوافرية</b>.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(20,20)">
+            <rect x="0" y="0" width="210" height="220" rx="14" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="105" y="40" text-anchor="middle" font-size="38">👀</text>
+            <text x="105" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">شخص يقرأ رسائلك</text>
+            <line x1="30" y1="110" x2="180" y2="110" stroke="#93c5fd" stroke-dasharray="4"/>
+            <text x="105" y="140" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">⚠️ خطر على</text>
+            <text x="105" y="175" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e40af">السرية</text>
+          </g>
+          <g transform="translate(240,20)">
+            <rect x="0" y="0" width="210" height="220" rx="14" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <text x="105" y="40" text-anchor="middle" font-size="38">📝</text>
+            <text x="105" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">تغيير الدرجات</text>
+            <line x1="30" y1="110" x2="180" y2="110" stroke="#6ee7b7" stroke-dasharray="4"/>
+            <text x="105" y="140" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">⚠️ خطر على</text>
+            <text x="105" y="175" text-anchor="middle" font-size="20" font-weight="bold" fill="#065f46">السلامة</text>
+          </g>
+          <g transform="translate(460,20)">
+            <rect x="0" y="0" width="220" height="220" rx="14" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="110" y="40" text-anchor="middle" font-size="38">💥</text>
+            <text x="110" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">الخادم تعطل</text>
+            <line x1="30" y1="110" x2="190" y2="110" stroke="#fcd34d" stroke-dasharray="4"/>
+            <text x="110" y="140" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444">⚠️ خطر على</text>
+            <text x="110" y="175" text-anchor="middle" font-size="20" font-weight="bold" fill="#92400e">التوافرية</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "التهديدات",
+      teacher: "هناك تهديدات كثيرة لأمن المعلومات، منها: الوصول غير المصرح به، والاختراق، والبرمجيات الخبيثة التي تشمل الفيروسات وحصان طروادة والديدان وبرامج التجسس وبرامج الفدية، وكذلك الجريمة الإلكترونية.",
+      content: `
+        <ul class="slide-list">
+          <li><b>الوصول غير المصرح به (Unauthorized Access).</b></li>
+          <li><b>الاختراق (Cracking).</b></li>
+          <li><b>البرمجيات الخبيثة (Malware):</b> فيروسات، حصان طروادة، ديدان، برامج تجسس، برامج فدية.</li>
+          <li><b>الجريمة الإلكترونية (Cybercrime).</b></li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(30,30)">
+            <rect x="0" y="0" width="120" height="150" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="60" y="70" text-anchor="middle" font-size="55">🦠</text>
+            <text x="60" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">فيروس</text>
+          </g>
+          <g transform="translate(165,30)">
+            <rect x="0" y="0" width="120" height="150" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="60" y="70" text-anchor="middle" font-size="55">🐴</text>
+            <text x="60" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">حصان طروادة</text>
+          </g>
+          <g transform="translate(300,30)">
+            <rect x="0" y="0" width="120" height="150" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="60" y="70" text-anchor="middle" font-size="55">🪱</text>
+            <text x="60" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">دودة</text>
+          </g>
+          <g transform="translate(435,30)">
+            <rect x="0" y="0" width="120" height="150" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="60" y="70" text-anchor="middle" font-size="55">🕵️</text>
+            <text x="60" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">تجسس</text>
+          </g>
+          <g transform="translate(570,30)">
+            <rect x="0" y="0" width="110" height="150" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="55" y="70" text-anchor="middle" font-size="55">💰</text>
+            <text x="55" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">فدية</text>
+          </g>
+          <text x="350" y="220" text-anchor="middle" font-size="14" font-weight="bold" fill="#991b1b">البرمجيات الخبيثة (Malware)</text>
+        </svg>
+      `
+    }
+  ],
+  question: "إذا لم تتعرض المعلومات للتدمير أو العبث، فهذه خاصية ماذا؟",
+  options: ["السرية", "السلامة", "التوافرية"],
+  correct: 1
+},
+{
+  id: 6, unit: "الوحدة 3",
+  title: "الدرس 4: التشفير",
+  slides: [
+    {
+      title: "التشفير (Encryption)",
+      teacher: "التشفير هو طريقة تُستخدم عند إرسال المعلومات لمنع اعتراضها من قبل أي شخص آخر غير المستلم المقصود. ويُطلق على النص الأصلي غير المشفر اسم Plaintext، وعلى النص المشفر اسم Ciphertext.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🔐 التعريف:</span>
+          طريقة تُستخدم عند إرسال المعلومات لمنع اعتراضها من قبل أي شخص آخر غير المستلم المقصود.
+        </div>
+        <div class="slide-text">
+          <b>النص العادي (Plaintext):</b> النص الأصلي قبل التشفير.<br>
+          <b>النص المشفر (Ciphertext):</b> النص بعد التشفير.
+        </div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(20,50)">
+            <rect x="0" y="0" width="180" height="110" rx="12" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="90" y="35" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">النص العادي</text>
+            <text x="90" y="70" text-anchor="middle" font-size="20" fill="#1e40af">مرحبا</text>
+            <text x="90" y="100" text-anchor="middle" font-size="10" fill="#64748b">Plaintext</text>
+          </g>
+          <g transform="translate(220,55)">
+            <circle cx="40" cy="50" r="35" fill="#8b5cf6"/>
+            <text x="40" y="62" text-anchor="middle" font-size="38" fill="#fff">🔒</text>
+          </g>
+          <text x="260" y="130" text-anchor="middle" font-size="11" font-weight="bold" fill="#6d28d9">تشفير</text>
+          <path d="M 320 110 L 370 110" stroke="#64748b" stroke-width="3"/>
+          <polygon points="370,105 390,110 370,115" fill="#64748b"/>
+          <g transform="translate(400,50)">
+            <rect x="0" y="0" width="180" height="110" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="90" y="35" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">النص المشفر</text>
+            <text x="90" y="70" text-anchor="middle" font-size="16" font-weight="bold" fill="#991b1b">&amp;SA+F¥C</text>
+            <text x="90" y="100" text-anchor="middle" font-size="10" fill="#64748b">Ciphertext</text>
+          </g>
+          <g transform="translate(600,55)">
+            <circle cx="40" cy="50" r="35" fill="#10b981"/>
+            <text x="40" y="62" text-anchor="middle" font-size="38" fill="#fff">🔓</text>
+          </g>
+          <text x="640" y="130" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">فك</text>
+        </svg>
+      `
+    },
+    {
+      title: "المفتاح (Key)",
+      teacher: "المفتاح هو الإجراء أو البيانات المحددة المستخدمة للتشفير وفك التشفير. أما فك التشفير فهو استعادة النص الأصلي من النص المشفر.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🗝️ التعريف:</span>
+          هو الإجراء أو البيانات المحددة المستخدمة للتشفير وفك التشفير.
+        </div>
+        <div class="slide-text"><b>فك التشفير (Decryption):</b> استعادة النص الأصلي من النص المشفر.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(80,50)">
+            <rect x="0" y="50" width="100" height="100" rx="12" fill="#3b82f6"/>
+            <path d="M 20 50 Q 20 10 50 10 Q 80 10 80 50" stroke="#3b82f6" stroke-width="12" fill="none"/>
+            <circle cx="50" cy="95" r="12" fill="#fff"/>
+            <rect x="45" y="100" width="10" height="30" fill="#fff"/>
+          </g>
+          <text x="130" y="200" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">نص مشفر</text>
+          <g transform="translate(280,80)">
+            <circle cx="40" cy="40" r="30" fill="#f59e0b" stroke="#92400e" stroke-width="2"/>
+            <rect x="65" y="35" width="80" height="10" fill="#f59e0b" stroke="#92400e" stroke-width="2"/>
+            <rect x="120" y="45" width="15" height="20" fill="#f59e0b" stroke="#92400e" stroke-width="2"/>
+            <rect x="100" y="45" width="10" height="15" fill="#f59e0b" stroke="#92400e" stroke-width="2"/>
+          </g>
+          <text x="350" y="200" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">المفتاح</text>
+          <path d="M 400 110 L 440 110" stroke="#64748b" stroke-width="3"/>
+          <polygon points="440,105 460,110 440,115" fill="#64748b"/>
+          <g transform="translate(480,50)">
+            <rect x="0" y="50" width="100" height="100" rx="12" fill="#10b981"/>
+            <path d="M 20 50 Q 20 10 50 10 Q 80 10 80 50" stroke="#10b981" stroke-width="12" fill="none" transform="rotate(-30 50 50)"/>
+            <circle cx="50" cy="95" r="12" fill="#fff"/>
+            <rect x="45" y="100" width="10" height="30" fill="#fff"/>
+          </g>
+          <text x="530" y="200" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">النص الأصلي</text>
+          <text x="350" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#475569">المفتاح هو الوسيلة للتشفير وفك التشفير</text>
+        </svg>
+      `
+    },
+    {
+      title: "التشفير بالمفتاح المتناظر",
+      teacher: "النوع الأول هو التشفير بالمفتاح المتناظر، وفيه يُستخدم نفس المفتاح للتشفير وفك التشفير. ميزته أنه سريع، لكن عيبه أن الطرفين لا بد أن يتشاركا المفتاح بأمان.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🔑 التعريف:</span>
+          طريقة تشفير حيث يتم استخدام نفس المفتاح المشترك (Shared Key) للتشفير وفك التشفير.
+        </div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(40,50)">
+            <circle cx="50" cy="40" r="30" fill="#3b82f6"/>
+            <text x="50" y="50" text-anchor="middle" font-size="30">👤</text>
+            <text x="50" y="100" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">المرسل</text>
+          </g>
+          <g transform="translate(140,60)">
+            <rect x="0" y="0" width="120" height="60" rx="10" fill="#f59e0b"/>
+            <text x="60" y="40" text-anchor="middle" font-size="30">🔑</text>
+          </g>
+          <text x="200" y="150" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">نفس المفتاح</text>
+          <g transform="translate(290,50)">
+            <rect x="0" y="0" width="120" height="60" rx="10" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="60" y="38" text-anchor="middle" font-size="14" font-weight="bold" fill="#991b1b">🔐 مشفرة</text>
+          </g>
+          <path d="M 420 80 L 460 80" stroke="#64748b" stroke-width="2"/>
+          <polygon points="460,75 480,80 460,85" fill="#64748b"/>
+          <g transform="translate(490,50)">
+            <circle cx="50" cy="40" r="30" fill="#10b981"/>
+            <text x="50" y="50" text-anchor="middle" font-size="30">👤</text>
+            <text x="50" y="100" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">المستقبل</text>
+          </g>
+          <g transform="translate(590,60)">
+            <rect x="0" y="0" width="100" height="60" rx="10" fill="#f59e0b"/>
+            <text x="50" y="40" text-anchor="middle" font-size="30">🔑</text>
+          </g>
+          <text x="640" y="150" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">نفس المفتاح</text>
+          <rect x="100" y="180" width="500" height="45" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+          <text x="350" y="208" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">✅ سريع جداً | ❌ صعوبة تبادل المفتاح بأمان</text>
+        </svg>
+      `
+    },
+    {
+      title: "التشفير بالمفتاح العام",
+      teacher: "النوع الثاني هو التشفير بالمفتاح العام، وفيه يُستخدم مفتاح عام للتشفير، ومفتاح خاص لفك التشفير. ويتم التشفير بالمفتاح العام للمستلم، وفك التشفير بالمفتاح الخاص للمستلم.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🗝️ التعريف:</span>
+          طريقة تشفير تستخدم مفتاح عام (Public Key) للتشفير، ومفتاح خاص (Private Key) لفك التشفير.
+        </div>
+        <div class="slide-text">
+          • يتم التشفير بالمفتاح العام للمستلم.<br>
+          • يتم فك التشفير بالمفتاح الخاص للمستلم فقط.
+        </div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(30,60)">
+            <circle cx="50" cy="40" r="30" fill="#3b82f6"/>
+            <text x="50" y="50" text-anchor="middle" font-size="30">👤</text>
+            <text x="50" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">المرسل</text>
+          </g>
+          <g transform="translate(140,60)">
+            <rect x="0" y="0" width="130" height="80" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="65" y="45" text-anchor="middle" font-size="34">🔓</text>
+            <text x="65" y="70" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">مفتاح عام</text>
+          </g>
+          <g transform="translate(290,60)">
+            <rect x="0" y="0" width="130" height="80" rx="10" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+            <text x="65" y="45" text-anchor="middle" font-size="20" font-weight="bold" fill="#991b1b">&amp;SA+F¥C</text>
+            <text x="65" y="70" text-anchor="middle" font-size="10" font-weight="bold" fill="#991b1b">نص مشفر</text>
+          </g>
+          <path d="M 430 100 L 470 100" stroke="#64748b" stroke-width="2"/>
+          <polygon points="470,95 490,100 470,105" fill="#64748b"/>
+          <g transform="translate(500,60)">
+            <circle cx="50" cy="40" r="30" fill="#10b981"/>
+            <text x="50" y="50" text-anchor="middle" font-size="30">👤</text>
+            <text x="50" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">المستقبل</text>
+          </g>
+          <g transform="translate(600,60)">
+            <rect x="0" y="0" width="80" height="80" rx="10" fill="#f59e0b"/>
+            <text x="40" y="45" text-anchor="middle" font-size="34">🔐</text>
+            <text x="40" y="70" text-anchor="middle" font-size="10" font-weight="bold" fill="#fff">خاص</text>
+          </g>
+          <rect x="100" y="180" width="500" height="60" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+          <text x="350" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">✅ آمن جداً (المفتاح الخاص مع المستلم فقط)</text>
+          <text x="350" y="225" text-anchor="middle" font-size="11" fill="#065f46">❌ أبطأ من المفتاح المتناظر</text>
+        </svg>
+      `
+    },
+    {
+      title: "طريقة المفتاح المؤقت",
+      teacher: "وهناك طريقة ثالثة تسمى طريقة المفتاح المؤقت، وهي تجمع بين المفتاح المتماثل والمفتاح العام، وذلك للاستفادة من سرعة الأول وأمان الثاني.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🔀 التعريف:</span>
+          طريقة تشفير تجمع بين التشفير بالمفتاح المتماثل والتشفير بالمفتاح العام.
+        </div>
+        <div class="slide-text"><b>الهدف:</b> الجمع بين سرعة المفتاح المتماثل وأمان المفتاح العام.</div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(80,60)">
+            <rect x="0" y="0" width="160" height="100" rx="12" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="80" y="50" text-anchor="middle" font-size="38">🔑</text>
+            <text x="80" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">مفتاح متماثل</text>
+          </g>
+          <text x="160" y="190" text-anchor="middle" font-size="11" fill="#1e40af">سريع</text>
+          <text x="280" y="120" text-anchor="middle" font-size="40" font-weight="bold" fill="#8b5cf6">+</text>
+          <g transform="translate(330,60)">
+            <rect x="0" y="0" width="160" height="100" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="80" y="50" text-anchor="middle" font-size="38">🗝️</text>
+            <text x="80" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">مفتاح عام</text>
+          </g>
+          <text x="410" y="190" text-anchor="middle" font-size="11" fill="#92400e">آمن</text>
+          <path d="M 520 110 L 560 110" stroke="#64748b" stroke-width="3"/>
+          <polygon points="560,105 580,110 560,115" fill="#64748b"/>
+          <g transform="translate(590,60)">
+            <rect x="0" y="0" width="100" height="100" rx="12" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+            <text x="50" y="55" text-anchor="middle" font-size="40">✨</text>
+            <text x="50" y="85" text-anchor="middle" font-size="10" font-weight="bold" fill="#5b21b6">مثالي</text>
+          </g>
+        </svg>
+      `
+    }
+  ],
+  question: "في التشفير بالمفتاح العام، يتم فك التشفير باستخدام ماذا؟",
+  options: ["المفتاح العام", "المفتاح الخاص للمستلم", "نفس مفتاح المرسل"],
+  correct: 1
+},
+{
+  id: 7, unit: "الوحدة 8",
+  title: "الدرس 3: بروتوكولات TCP/IP",
+  slides: [
+    {
+      title: "الحزمة (Packet)",
+      teacher: "عند إرسال رسالة عبر الإنترنت، يتم تقسيمها إلى أجزاء صغيرة تسمى الحزم. وكل حزمة يُضاف إليها رأس يحتوي على معلومات الوجهة.",
+      content: `
+        <div class="definition-box">
+          <span class="term">📦 التعريف:</span>
+          الوحدة المستخدمة عند تقسيم البيانات إلى أجزاء صغيرة لإرسالها عبر الشبكة، مع رأس (Header) يتضمن معلومات الوجهة.
+        </div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(30,50)">
+            <rect x="0" y="0" width="140" height="120" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="70" y="50" text-anchor="middle" font-size="34">📄</text>
+            <text x="70" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">ملف كامل</text>
+          </g>
+          <path d="M 185 60 L 235 40" stroke="#8b5cf6" stroke-width="2"/>
+          <path d="M 185 110 L 235 110" stroke="#8b5cf6" stroke-width="2"/>
+          <path d="M 185 160 L 235 180" stroke="#8b5cf6" stroke-width="2"/>
+          <text x="210" y="115" text-anchor="middle" font-size="10" fill="#6d28d9">تقسيم</text>
+          <g transform="translate(250,20)">
+            <rect x="0" y="0" width="200" height="50" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <rect x="0" y="0" width="50" height="50" rx="8" fill="#10b981"/>
+            <text x="25" y="32" text-anchor="middle" font-size="14" fill="#fff">📌</text>
+            <text x="125" y="32" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">جزء 1</text>
+          </g>
+          <g transform="translate(250,85)">
+            <rect x="0" y="0" width="200" height="50" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <rect x="0" y="0" width="50" height="50" rx="8" fill="#10b981"/>
+            <text x="25" y="32" text-anchor="middle" font-size="14" fill="#fff">📌</text>
+            <text x="125" y="32" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">جزء 2</text>
+          </g>
+          <g transform="translate(250,150)">
+            <rect x="0" y="0" width="200" height="50" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+            <rect x="0" y="0" width="50" height="50" rx="8" fill="#10b981"/>
+            <text x="25" y="32" text-anchor="middle" font-size="14" fill="#fff">📌</text>
+            <text x="125" y="32" text-anchor="middle" font-size="11" font-weight="bold" fill="#065f46">جزء 3</text>
+          </g>
+          <g transform="translate(480,80)">
+            <circle cx="60" cy="60" r="55" fill="#8b5cf6"/>
+            <text x="60" y="75" text-anchor="middle" font-size="55" fill="#fff">🎯</text>
+            <text x="60" y="140" text-anchor="middle" font-size="13" font-weight="bold" fill="#6d28d9">الوجهة</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "بروتوكول الاتصال",
+      teacher: "البروتوكول هو اتفاقية مشتركة في شبكات المعلومات والاتصالات.",
+      content: `
+        <div class="definition-box">
+          <span class="term">🤝 التعريف:</span>
+          اتفاقية مشتركة في شبكات المعلومات والاتصالات.
+        </div>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(80,50)">
+            <rect x="0" y="0" width="120" height="90" rx="10" fill="#3b82f6"/>
+            <text x="60" y="55" text-anchor="middle" font-size="38" fill="#fff">💻</text>
+          </g>
+          <g transform="translate(260,70)">
+            <rect x="0" y="0" width="180" height="50" rx="25" fill="#8b5cf6"/>
+            <text x="90" y="32" text-anchor="middle" font-size="14" font-weight="bold" fill="#fff">🤝 اتفاقية مشتركة</text>
+          </g>
+          <g transform="translate(500,50)">
+            <rect x="0" y="0" width="120" height="90" rx="10" fill="#10b981"/>
+            <text x="60" y="55" text-anchor="middle" font-size="38" fill="#fff">🖥️</text>
+          </g>
+          <path d="M 210 90 L 250 90" stroke="#64748b" stroke-width="2"/>
+          <polygon points="250,85 270,90 250,95" fill="#64748b"/>
+          <path d="M 450 90 L 490 90" stroke="#64748b" stroke-width="2"/>
+          <polygon points="490,85 510,90 490,95" fill="#64748b"/>
+          <text x="350" y="180" text-anchor="middle" font-size="13" font-weight="bold" fill="#475569">كل الأجهزة تتفق على نفس اللغة للتواصل</text>
+        </svg>
+      `
+    },
+    {
+      title: "البروتوكولات الرئيسية",
+      teacher: "أشهر ثلاثة بروتوكولات هي: TCP وهو موثوق لأنه يقسم ويرتب ويعيد إرسال المفقود. وUDP وهو سريع لأنه يهتم بالوقت الفعلي. وIP وهو الذي يعين العناوين ويوجه الحزم.",
+      content: `
+        <ul class="slide-list">
+          <li><b>TCP:</b> يقسم البيانات، يرتب الحزم، ويطلب إعادة إرسال المفقود.</li>
+          <li><b>UDP:</b> يؤكد على إرسال البيانات في الوقت الفعلي (بث الفيديو).</li>
+          <li><b>IP:</b> يعين عناوين IP ويوجه الحزم للوجهة الصحيحة.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(20,30)">
+            <rect x="0" y="0" width="210" height="200" rx="14" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="105" y="45" text-anchor="middle" font-size="36">📧</text>
+            <text x="105" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e40af">TCP</text>
+            <text x="105" y="110" text-anchor="middle" font-size="11" fill="#1e40af">موثوق • منظم</text>
+            <text x="105" y="155" text-anchor="middle" font-size="11" fill="#1e40af">✅ يرتب الحزم</text>
+            <text x="105" y="175" text-anchor="middle" font-size="11" fill="#1e40af">✅ يعيد المفقود</text>
+            <text x="105" y="195" text-anchor="middle" font-size="10" fill="#475569">للبريد والويب</text>
+          </g>
+          <g transform="translate(245,30)">
+            <rect x="0" y="0" width="210" height="200" rx="14" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="105" y="45" text-anchor="middle" font-size="36">🎥</text>
+            <text x="105" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#92400e">UDP</text>
+            <text x="105" y="110" text-anchor="middle" font-size="11" fill="#92400e">سريع • مباشر</text>
+            <text x="105" y="155" text-anchor="middle" font-size="11" fill="#92400e">✅ بدون ترتيب</text>
+            <text x="105" y="175" text-anchor="middle" font-size="11" fill="#92400e">✅ بدون إعادة</text>
+            <text x="105" y="195" text-anchor="middle" font-size="10" fill="#475569">للفيديو والألعاب</text>
+          </g>
+          <g transform="translate(470,30)">
+            <rect x="0" y="0" width="210" height="200" rx="14" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+            <text x="105" y="45" text-anchor="middle" font-size="36">🎯</text>
+            <text x="105" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#5b21b6">IP</text>
+            <text x="105" y="110" text-anchor="middle" font-size="11" fill="#5b21b6">عنونة وتوجيه</text>
+            <text x="105" y="155" text-anchor="middle" font-size="11" fill="#5b21b6">✅ يعين العناوين</text>
+            <text x="105" y="175" text-anchor="middle" font-size="11" fill="#5b21b6">✅ يوجه الحزم</text>
+            <text x="105" y="195" text-anchor="middle" font-size="10" fill="#475569">لكل الاتصالات</text>
+          </g>
+        </svg>
+      `
+    },
+    {
+      title: "نموذج TCP/IP رباعي الطبقات",
+      teacher: "نموذج TCP/IP يتكون من أربع طبقات: طبقة التطبيق وفيها HTTP وSMTP، وطبقة النقل وفيها TCP وUDP، وطبقة الإنترنت وفيها IP، وطبقة واجهة الشبكة وفيها Ethernet.",
+      content: `
+        <ul class="slide-list">
+          <li><b>طبقة التطبيق:</b> HTTP, SMTP.</li>
+          <li><b>طبقة النقل:</b> TCP, UDP.</li>
+          <li><b>طبقة الإنترنت:</b> IP.</li>
+          <li><b>طبقة واجهة الشبكة:</b> Ethernet.</li>
+        </ul>
+      `,
+      illustration: `
+        <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+          <rect x="80" y="20" width="540" height="60" rx="12" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+          <text x="350" y="45" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">طبقة التطبيق (Application)</text>
+          <text x="350" y="68" text-anchor="middle" font-size="12" fill="#1e40af">HTTP • SMTP • FTP</text>
+          <rect x="80" y="90" width="540" height="60" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+          <text x="350" y="115" text-anchor="middle" font-size="15" font-weight="bold" fill="#065f46">طبقة النقل (Transport)</text>
+          <text x="350" y="138" text-anchor="middle" font-size="12" fill="#065f46">TCP • UDP</text>
+          <rect x="80" y="160" width="540" height="60" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+          <text x="350" y="185" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">طبقة الإنترنت (Internet)</text>
+          <text x="350" y="208" text-anchor="middle" font-size="12" fill="#92400e">IP</text>
+          <rect x="80" y="230" width="540" height="60" rx="12" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+          <text x="350" y="255" text-anchor="middle" font-size="15" font-weight="bold" fill="#5b21b6">طبقة واجهة الشبكة</text>
+          <text x="350" y="278" text-anchor="middle" font-size="12" fill="#5b21b6">Ethernet • Wi-Fi</text>
+        </svg>
+      `
+    }
+  ],
+  question: "ما هو البروتوكول المسؤول عن إعادة إرسال الحزم المفقودة؟",
+  options: ["UDP", "IP", "TCP"],
+  correct: 2
+}
+];
+
+/* ==========================================================
+   الحالة
+   ========================================================== */
+let currentLesson = null;
+let currentSlideIndex = 0;
+let isSpeaking = false;
+let autoAdvance = true;
+let selectedVoice = null;
+let allVoices = [];
+let rate = 0.9;
+let pitch = 1.0;
+let currentAudio = null;
+let currentQuizList = [];
+let currentQuizIdx = 0;
+let selectedText = '';
+let longPressTimer = null;
+
+function toggleSidebar(){
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  if(window.innerWidth <= 768){
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active', sidebar.classList.contains('open'));
+  } else {
+    sidebar.classList.toggle('collapsed');
+  }
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+function renderSidebar(){
+  const list = document.getElementById('lesson-list');
+  list.innerHTML = '';
+  let lastUnit = '';
+  curriculum.forEach(lesson=>{
+    if(lesson.unit !== lastUnit){
+      lastUnit = lesson.unit;
+      const h = document.createElement('div');
+      h.className = 'unit-header';
+      h.textContent = '📖 ' + lesson.unit;
+      list.appendChild(h);
+    }
+    const item = document.createElement('div');
+    item.className = 'lesson-item' + (currentLesson === lesson.id ? ' active' : '');
+    let icon = '⚪';
+    if(lesson.status === 'understood') icon = '✅';
+    if(lesson.status === 'review') icon = '🔁';
+    item.innerHTML = '<span>' + lesson.title + '</span><span class="badge">' + icon + '</span>';
+    item.onclick = ()=>{ openLesson(lesson.id); closeSidebar(); };
+    list.appendChild(item);
+  });
+}
+
+function loadProgress(){
+  try{
+    const saved = localStorage.getItem('studyBuddyV8');
+    if(saved){
+      const parsed = JSON.parse(saved);
+      curriculum.forEach(l=>{ if(parsed[l.id]) l.status = parsed[l.id]; });
+    }
+  }catch(e){}
+}
+function saveProgress(){
+  try{
+    const p = {};
+    curriculum.forEach(l=>{ p[l.id] = l.status || 'unread'; });
+    localStorage.setItem('studyBuddyV8', JSON.stringify(p));
+  }catch(e){}
+}
+
+function openLesson(id){
+  stopSpeak();
+  currentLesson = id;
+  currentSlideIndex = 0;
+  const lesson = curriculum.find(l=>l.id===id);
+  document.getElementById('top-title').textContent = lesson.title;
+  
+  const content = document.getElementById('content');
+  let html = '<h1 id="lesson-title">' + lesson.title + '</h1>';
+  
+  lesson.slides.forEach((slide, i)=>{
+    html += `
+      <div class="slide-card" id="slide-${i}" data-slide="${i}">
+        <div class="slide-header">
+          <span class="slide-number">الشريحة ${i+1} من ${lesson.slides.length}</span>
+          <button class="slide-play-btn" onclick="speakSlide(${i})" title="اسمع الشريحة">🔊</button>
+        </div>
+        <span class="voice-badge" id="voice-badge-${i}">
+          <span class="voice-wave"><span></span><span></span><span></span><span></span></span>
+          <span>جاري الشرح...</span>
+        </span>
+        <h2 class="slide-title">${slide.title}</h2>
+        <div class="teacher-hidden" id="teacher-${i}">${slide.teacher || ''}</div>
+        <div class="slide-body">
+          ${slide.content}
+        </div>
+        ${slide.illustration ? `<div class="slide-illustration">${slide.illustration}</div>` : ''}
+      </div>
+    `;
+  });
+  
+  html += `
+    <div class="action-bar">
+      <button class="btn btn-success" onclick="markStatus('understood')">✅ فهمت</button>
+      <button class="btn btn-warn" onclick="markStatus('review')">🔁 راجع</button>
+      <button class="btn btn-primary" onclick="startSingleQuiz(${lesson.id})">❓ اختبرني</button>
+    </div>
+  `;
+  
+  content.innerHTML = html;
+  document.getElementById('main').scrollTop = 0;
+  renderSidebar();
+}
+
+function markStatus(status){
+  if(!currentLesson){ showToast('اختر درساً أولاً! 📖'); return; }
+  const lesson = curriculum.find(l=>l.id===currentLesson);
+  lesson.status = (lesson.status === status) ? 'unread' : status;
+  saveProgress();
+  renderSidebar();
+  const msgs = {understood:'✅ أحسنت!', review:'🔁 لا بأس، سنراجعها.', unread:'تم إلغاء التحديد'};
+  showToast(msgs[lesson.status]);
+}
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2500);
+}
+function scrollToTop(){
+  document.getElementById('main').scrollTo({top:0, behavior:'smooth'});
+}
+
+function loadVoices(){
+  return new Promise((resolve)=>{
+    if(!('speechSynthesis' in window)){ resolve([]); return; }
+    let attempts = 0;
+    function tryGet(){
+      const voices = window.speechSynthesis.getVoices();
+      if(voices && voices.length > 0){ resolve(voices); }
+      else if(attempts < 20){ attempts++; setTimeout(tryGet, 150); }
+      else { resolve([]); }
+    }
+    tryGet();
+  });
+}
+function pickAutoVoice(voices){
+  if(!voices || voices.length === 0) return null;
+  const priorities = [
+    v => v.lang === 'ar-EG', v => v.lang === 'ar_EG',
+    v => v.lang.startsWith('ar-EG'), v => v.lang === 'ar-SA',
+    v => v.lang.startsWith('ar-SA'), v => v.lang.startsWith('ar'),
+  ];
+  for(const test of priorities){
+    const found = voices.find(test);
+    if(found) return found;
+  }
+  return null;
+}
+
+/* ==========================================================
+   ⭐ الحل النهائي: الشرح + التعريف، بدون أي جملة انتقالية
+   ========================================================== */
+function getSlideText(index){
+  const lesson = curriculum.find(l => l.id === currentLesson);
+  if (!lesson || !lesson.slides[index]) return '';
+
+  const slide = lesson.slides[index];
+  const teacher = cleanSpeechText(slide.teacher || '');
+  const parts = [];
+
+  // اقرأ النص الأصلي للشريحة فقط، ولا تستخرج أي وصف من الرسم التوضيحي.
+  // هذا يمنع إدخال عناوين الرسوم أو أوصافها ضمن النص المنطوق.
+  const source = document.createElement('div');
+  source.innerHTML = slide.content || '';
+  source.querySelectorAll(
+    'svg, img, canvas, picture, video, audio, .slide-illustration, script, style, [role="img"], [aria-label]'
+  ).forEach(el => el.remove());
+
+  source.querySelectorAll('.definition-box, .slide-text').forEach(el => {
+    const text = cleanSpeechText(el.innerText || el.textContent || '');
+    if (text) parts.push(text);
+  });
+
+  source.querySelectorAll('.slide-list li').forEach(el => {
+    const text = cleanSpeechText(el.innerText || el.textContent || '');
+    if (text && !parts.includes(text)) parts.push(text);
+  });
+
+  const book = parts.join(' ').replace(/\s+/g, ' ').trim();
+  if (teacher && book) return cleanSpeechText(teacher + '. ' + book);
+  return book || teacher;
+}
+
+function cleanSpeechText(value){
+  return String(value || '')
+    // استبعاد العبارة التي ظهرت بالخطأ وأي اختلاف بسيط في كتابتها.
+    .replace(/مخطط\s*(?:بياني\s*)?(?:شريطي|بالأشرطة)\s*(?:للتعريف|للتوضيح)?/gi, ' ')
+    .replace(/وصف\s*(?:الرسم|المخطط)\s*(?:البياني)?/gi, ' ')
+    .replace(/[📊📈📉🖼️]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function speakSlide(index){
+  if(!currentLesson){ showToast('اختر درساً أولاً! 📖'); return; }
+  if(isSpeaking){ stopSpeak(); }
+  
+  const text = getSlideText(index);
+  if(!text){ showToast('لا يوجد نص'); return; }
+  
+  if(!selectedVoice){
+    const voices = await loadVoices();
+    const saved = loadSettings();
+    if(saved.voiceName){
+      const found = voices.find(v => v.name === saved.voiceName);
+      if(found) selectedVoice = found;
+    }
+    if(!selectedVoice) selectedVoice = pickAutoVoice(voices);
+  }
+  
+  currentSlideIndex = index;
+  scrollToSlide(index);
+  
+  window.speechSynthesis.cancel();
+  isSpeaking = true;
+  document.getElementById('speak-btn').classList.add('speaking');
+  showVoiceBadge(index, false);
+  highlightSlide(index);
+  
+  const utter = new SpeechSynthesisUtterance(text);
+  if(selectedVoice){ utter.voice = selectedVoice; utter.lang = selectedVoice.lang; }
+  else { utter.lang = 'ar-EG'; }
+  utter.rate = rate;
+  utter.pitch = pitch;
+  utter.onend = ()=>{
+    hideVoiceBadge(index);
+    unhighlightSlide(index);
+    endSpeak();
+    if(autoAdvance){
+      const lesson = curriculum.find(l=>l.id===currentLesson);
+      if(currentSlideIndex < lesson.slides.length - 1){
+        setTimeout(()=>speakSlide(currentSlideIndex + 1), 500);
+      }
+    }
+  };
+  utter.onerror = ()=>{
+    hideVoiceBadge(index);
+    unhighlightSlide(index);
+    endSpeak();
+  };
+  window.speechSynthesis.speak(utter);
+}
+
+async function toggleSpeak(){
+  if(isSpeaking){ stopSpeak(); return; }
+  if(!currentLesson){ showToast('اختر درساً أولاً! 📖'); return; }
+  if(!('speechSynthesis' in window)){ showToast('❌ المتصفح لا يدعم الصوت'); return; }
+  speakSlide(currentSlideIndex >= 0 ? currentSlideIndex : 0);
+}
+
+async function toggleCloudSpeak(){
+  if(currentAudio && !currentAudio.paused){ stopSpeak(); return; }
+  if(!currentLesson){ showToast('اختر درساً أولاً! 📖'); return; }
+  if(!navigator.onLine){ showToast('⚠️ تحتاج اتصال بالإنترنت'); return; }
+  speakSlideCloud(currentSlideIndex >= 0 ? currentSlideIndex : 0);
+}
+
+async function speakSlideCloud(index){
+  const lesson = curriculum.find(l=>l.id===currentLesson);
+  if(!lesson || !lesson.slides[index]) return;
+  const text = getSlideText(index);
+  if(!text){ showToast('لا يوجد نص'); return; }
+  
+  currentSlideIndex = index;
+  scrollToSlide(index);
+  
+  const cloudBtn = document.getElementById('cloud-speak-btn');
+  cloudBtn.classList.add('speaking-cloud');
+  showVoiceBadge(index, true);
+  highlightSlide(index);
+  
+  const chunks = splitTextIntoChunks(text, 180);
+  
+  try {
+    for(let i = 0; i < chunks.length; i++){
+      const url = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodeURIComponent(chunks[i]) + '&tl=ar&client=tw-ob';
+      const audio = new Audio(url);
+      currentAudio = audio;
+      await new Promise((resolve, reject)=>{
+        audio.onended = resolve;
+        audio.onerror = () => reject(new Error('فشل تحميل الصوت'));
+        audio.play().catch(reject);
+      });
+      if(!cloudBtn.classList.contains('speaking-cloud')) return;
+    }
+    hideVoiceBadge(index);
+    unhighlightSlide(index);
+    cloudBtn.classList.remove('speaking-cloud');
+    currentAudio = null;
+    if(autoAdvance && currentSlideIndex < lesson.slides.length - 1){
+      setTimeout(()=>speakSlideCloud(currentSlideIndex + 1), 500);
+    }
+  } catch(err){
+    hideVoiceBadge(index);
+    unhighlightSlide(index);
+    cloudBtn.classList.remove('speaking-cloud');
+    currentAudio = null;
+    showToast('❌ ' + (err.message || 'حدث خطأ'));
+  }
+}
+
+function stopSpeak(){
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  if(currentAudio){ currentAudio.pause(); currentAudio = null; }
+  endSpeak();
+}
+function endSpeak(){
+  isSpeaking = false;
+  document.getElementById('speak-btn').classList.remove('speaking');
+  document.getElementById('cloud-speak-btn').classList.remove('speaking-cloud');
+  document.querySelectorAll('.voice-badge').forEach(el => el.classList.remove('active', 'cloud'));
+  document.querySelectorAll('.slide-card').forEach(el => el.classList.remove('active-voice'));
+}
+function showVoiceBadge(index, isCloud){
+  const el = document.getElementById('voice-badge-' + index);
+  if(el){ el.classList.add('active'); el.classList.toggle('cloud', isCloud); }
+}
+function hideVoiceBadge(index){
+  const el = document.getElementById('voice-badge-' + index);
+  if(el) el.classList.remove('active', 'cloud');
+}
+function highlightSlide(index){
+  document.querySelectorAll('.slide-card').forEach(el => el.classList.remove('active-voice'));
+  const el = document.getElementById('slide-' + index);
+  if(el) el.classList.add('active-voice');
+}
+function unhighlightSlide(index){
+  const el = document.getElementById('slide-' + index);
+  if(el) el.classList.remove('active-voice');
+}
+function scrollToSlide(index){
+  const el = document.getElementById('slide-' + index);
+  if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+}
+function splitTextIntoChunks(text, maxLen){
+  const chunks = [];
+  const sentences = text.split(/(?<=[.،؟!\n])\s*/);
+  let current = '';
+  for(const sentence of sentences){
+    if((current + ' ' + sentence).length <= maxLen){
+      current += (current ? ' ' : '') + sentence;
+    } else {
+      if(current) chunks.push(current.trim());
+      if(sentence.length > maxLen){
+        const words = sentence.split(' ');
+        let part = '';
+        for(const w of words){
+          if((part + ' ' + w).length <= maxLen){ part += (part ? ' ' : '') + w; }
+          else { if(part) chunks.push(part.trim()); part = w; }
+        }
+        if(part) current = part;
+      } else { current = sentence; }
+    }
+  }
+  if(current) chunks.push(current.trim());
+  return chunks.filter(c => c.length > 0);
+}
+
+function saveSettings(){
+  try{
+    localStorage.setItem('voiceSettingsV8', JSON.stringify({
+      voiceName: selectedVoice ? selectedVoice.name : null,
+      rate: rate, pitch: pitch
+    }));
+  }catch(e){}
+}
+function loadSettings(){
+  try{
+    const s = JSON.parse(localStorage.getItem('voiceSettingsV8') || '{}');
+    if(s.rate) rate = s.rate;
+    if(s.pitch) pitch = s.pitch;
+    return s;
+  }catch(e){ return {}; }
+}
+async function openVoicePanel(){
+  document.getElementById('voice-panel').classList.add('active');
+  const list = document.getElementById('voice-list');
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">جاري التحميل...</div>';
+  allVoices = await loadVoices();
+  if(!selectedVoice && allVoices.length > 0){
+    const saved = loadSettings();
+    if(saved.voiceName){
+      const found = allVoices.find(v => v.name === saved.voiceName);
+      if(found) selectedVoice = found;
+    }
+    if(!selectedVoice) selectedVoice = pickAutoVoice(allVoices);
+  }
+  document.getElementById('rate-slider').value = rate;
+  document.getElementById('rate-value').textContent = rate.toFixed(2);
+  document.getElementById('pitch-slider').value = pitch;
+  document.getElementById('pitch-value').textContent = pitch.toFixed(2);
+  renderVoiceList();
+}
+function closeVoicePanel(){
+  document.getElementById('voice-panel').classList.remove('active');
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+function renderVoiceList(){
+  const list = document.getElementById('voice-list');
+  if(allVoices.length === 0){
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">⚠️ لم يتم تحميل أي أصوات.</div>';
+    return;
+  }
+  const arabicVoices = allVoices.filter(v => v.lang.toLowerCase().startsWith('ar'));
+  const otherVoices = allVoices.filter(v => !v.lang.toLowerCase().startsWith('ar'));
+  list.innerHTML = '';
+  if(arabicVoices.length === 0){
+    const warn = document.createElement('div');
+    warn.style.cssText = 'background:#fef3c7;color:#92400e;padding:14px;border-radius:10px;text-align:right;line-height:1.8;font-size:12.5px';
+    warn.innerHTML = '<b>⚠️ لا يوجد صوت عربي على جهازك!</b>';
+    list.appendChild(warn);
+  }
+  arabicVoices.forEach(v => list.appendChild(createVoiceItem(v, true)));
+  if(otherVoices.length > 0){
+    const sep = document.createElement('div');
+    sep.style.cssText = 'padding:8px 4px;font-size:11.5px;font-weight:700;color:#94a3b8;margin-top:8px';
+    sep.textContent = '🔈 أصوات أخرى:';
+    list.appendChild(sep);
+    otherVoices.slice(0, 10).forEach(v => list.appendChild(createVoiceItem(v, false)));
+  }
+}
+function createVoiceItem(voice, isArabic){
+  const div = document.createElement('div');
+  const isSelected = selectedVoice && selectedVoice.name === voice.name && selectedVoice.lang === voice.lang;
+  div.className = 'voice-item' + (isSelected ? ' selected' : '');
+  const nameDiv = document.createElement('div');
+  nameDiv.className = 'voice-item-info';
+  nameDiv.innerHTML = '<div class="voice-item-name">' + (isArabic ? '🇸🇦 ' : '') + voice.name + '</div>' +
+    '<div class="voice-item-lang">' + voice.lang + '</div>';
+  const actions = document.createElement('div');
+  actions.className = 'voice-item-actions';
+  const testBtn = document.createElement('button');
+  testBtn.className = 'mini-btn gray';
+  testBtn.textContent = '🔊';
+  testBtn.onclick = (e)=>{ e.stopPropagation(); testSingleVoice(voice); };
+  const selectBtn = document.createElement('button');
+  selectBtn.className = 'mini-btn ' + (isSelected ? 'success' : 'purple');
+  selectBtn.textContent = isSelected ? '✓' : 'اختر';
+  selectBtn.onclick = (e)=>{
+    e.stopPropagation();
+    selectedVoice = voice;
+    saveSettings();
+    renderVoiceList();
+    showToast('✅ تم اختيار: ' + voice.name);
+  };
+  actions.appendChild(testBtn);
+  actions.appendChild(selectBtn);
+  div.appendChild(nameDiv);
+  div.appendChild(actions);
+  div.onclick = ()=>{
+    selectedVoice = voice;
+    saveSettings();
+    renderVoiceList();
+    showToast('✅ تم اختيار: ' + voice.name);
+  };
+  return div;
+}
+function testSingleVoice(voice){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance('مرحباً، هذا اختبار للصوت العربي.');
+  utter.voice = voice;
+  utter.lang = voice.lang;
+  utter.rate = rate;
+  utter.pitch = pitch;
+  window.speechSynthesis.speak(utter);
+}
+function testVoice(){
+  if(!selectedVoice){ showToast('⚠️ اختر صوتاً أولاً'); return; }
+  testSingleVoice(selectedVoice);
+}
+function updateRate(val){
+  rate = parseFloat(val);
+  document.getElementById('rate-value').textContent = rate.toFixed(2);
+  saveSettings();
+}
+function updatePitch(val){
+  pitch = parseFloat(val);
+  document.getElementById('pitch-value').textContent = pitch.toFixed(2);
+  saveSettings();
+}
+
+document.addEventListener('touchstart', (e) => {
+  if(e.target.closest('#ask-modal') || e.target.closest('#voice-panel') || e.target.closest('#quiz-modal') || e.target.closest('#topbar') || e.target.closest('#sidebar') || e.target.closest('#floating-actions')) return;
+  if(!e.target.closest('.slide-card')) return;
+  const target = e.target;
+  longPressTimer = setTimeout(()=>{
+    const sel = window.getSelection();
+    const text = sel.toString().trim();
+    if(text.length > 4 && text.length < 500){ selectedText = text; openAskModal(); }
+    else {
+      const sentence = findSentenceAround(target);
+      if(sentence){ selectedText = sentence; openAskModal(); }
+      else { showToast('اضغط مطولاً على أي جملة 💡'); }
+    }
+  }, 700);
+}, {passive:true});
+document.addEventListener('touchend', ()=>{ if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null;} });
+document.addEventListener('touchmove', ()=>{ if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null;} });
+
+document.addEventListener('mouseup', (e) => {
+  if(document.getElementById('ask-modal').classList.contains('active')) return;
+  const sel = window.getSelection();
+  const text = sel.toString().trim();
+  if(text.length > 4 && text.length < 500){ selectedText = text; openAskModal(); }
+});
+
+function findSentenceAround(el){
+  let text = '';
+  let node = el;
+  while(node && !text && node !== document.body){
+    text = node.textContent || '';
+    if(text.length > 30) break;
+    node = node.parentElement;
+  }
+  if(!text) return '';
+  const sentences = text.split(/[.،؟!\n]/).map(s=>s.trim()).filter(s=>s.length > 5);
+  if(sentences.length === 0) return text.substring(0, 100);
+  return sentences[0];
+}
+
+function openAskModal(){
+  if(!selectedText){ showToast('اضغط مطولاً على جملة لتسأل 💡'); return; }
+  document.getElementById('selected-text').textContent = '📌 النقطة: "' + selectedText + '"';
+  document.getElementById('user-question').value = '';
+  document.getElementById('answer-area').classList.remove('show');
+  document.getElementById('answer-area').textContent = '';
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('ask-modal').classList.add('active');
+}
+function closeAskModal(){ document.getElementById('ask-modal').classList.remove('active'); }
+
+async function askTeacher(){
+  const question = document.getElementById('user-question').value.trim();
+  if(!selectedText && !question){ showToast('اكتب سؤالك أو حدد جملة'); return; }
+  
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('answer-area').classList.remove('show');
+  
+  try {
+    let wikiInfo = '';
+    const searchTerm = (selectedText || question).substring(0, 80);
+    try {
+      const searchQ = encodeURIComponent(searchTerm);
+      const wikiRes = await fetch('https://ar.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + searchQ + '&format=json&origin=*');
+      const wikiData = await wikiRes.json();
+      if(wikiData.query && wikiData.query.search && wikiData.query.search.length > 0){
+        const title = wikiData.query.search[0].title;
+        const sumRes = await fetch('https://ar.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title));
+        const sumData = await sumRes.json();
+        if(sumData.extract) wikiInfo = sumData.extract;
+      }
+    } catch(wikiErr){}
+    
+    const prompt = 'أنت مدرس خبير في مادة تكنولوجيا المعلومات لطلاب الصف الأول الثانوي. اشرح باللغة العربية الفصحى المبسطة، وكن ودوداً ومشجعاً، واستخدم أمثلة من الحياة اليومية.\n\nالنقطة التي يريد الطالب فهمها: "' + selectedText + '"\n' + (question ? 'السؤال: ' + question : '') + '\n' + (wikiInfo ? 'معلومة إضافية: ' + wikiInfo.substring(0, 500) : '') + '\n\nاشرح بالعربية الفصحى بأسلوب واضح ومنظم.';
+    
+    const url = 'https://text.pollinations.ai/' + encodeURIComponent(prompt);
+    const response = await fetch(url);
+    if(!response.ok) throw new Error('فشل الاتصال');
+    const answer = await response.text();
+    
+    document.getElementById('loading').classList.remove('show');
+    const answerArea = document.getElementById('answer-area');
+    answerArea.textContent = answer;
+    answerArea.classList.add('show');
+  } catch(err){
+    document.getElementById('loading').classList.remove('show');
+    const answerArea = document.getElementById('answer-area');
+    answerArea.innerHTML = '<b>عذراً،</b> حدثت مشكلة في الاتصال. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.';
+    answerArea.classList.add('show');
+  }
+}
+
+document.getElementById('user-question').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); askTeacher(); }
+});
+
+function startSingleQuiz(id){
+  if(!id){ showToast('اختر درساً أولاً! 📖'); return; }
+  currentQuizList = [id];
+  currentQuizIdx = 0;
+  openQuiz();
+}
+function startGlobalQuiz(){
+  currentQuizList = curriculum.filter(l => l.status === 'review').map(l => l.id);
+  if(currentQuizList.length === 0){ showToast('لا توجد دروس للمراجعة!'); return; }
+  currentQuizIdx = 0;
+  openQuiz();
+}
+function openQuiz(){
+  if(currentQuizIdx >= currentQuizList.length){ showToast('🎉 انتهى الاختبار!'); closeQuiz(); return; }
+  const lesson = curriculum.find(l => l.id === currentQuizList[currentQuizIdx]);
+  document.getElementById('quiz-title').textContent = '🎯 ' + lesson.title;
+  document.getElementById('quiz-question').textContent = lesson.question;
+  const opts = document.getElementById('quiz-options');
+  opts.innerHTML = '';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('next-q-btn').style.display = 'none';
+  lesson.options.forEach((opt, i)=>{
+    const b = document.createElement('button');
+    b.className = 'option'; b.textContent = opt;
+    b.onclick = ()=> checkAnswer(i, lesson.correct, b);
+    opts.appendChild(b);
+  });
+  document.getElementById('quiz-modal').classList.add('active');
+}
+function checkAnswer(sel, corr, btn){
+  const all = document.querySelectorAll('#quiz-options .option');
+  all.forEach(b => b.disabled = true);
+  const fb = document.getElementById('feedback');
+  if(sel === corr){
+    btn.classList.add('correct');
+    fb.textContent = '🎉 إجابة صحيحة!';
+    fb.style.color = '#10b981';
+  } else {
+    btn.classList.add('wrong');
+    all[corr].classList.add('correct');
+    fb.textContent = '❌ إجابة خاطئة. الإجابة الصحيحة بالأخضر.';
+    fb.style.color = '#ef4444';
+  }
+  document.getElementById('next-q-btn').style.display = 'inline-flex';
+}
+function nextQuestion(){
+  currentQuizIdx++;
+  if(currentQuizIdx < currentQuizList.length) openQuiz();
+  else { showToast('🎉 انتهت الأسئلة!'); closeQuiz(); }
+}
+function closeQuiz(){ document.getElementById('quiz-modal').classList.remove('active'); }
+
+loadProgress();
+loadSettings();
+renderSidebar();
+
+if('speechSynthesis' in window){
+  const initV = ()=>{
+    loadVoices().then(voices => {
+      allVoices = voices;
+      const saved = loadSettings();
+      if(saved.voiceName){
+        const found = voices.find(v => v.name === saved.voiceName);
+        if(found) selectedVoice = found;
+      }
+      if(!selectedVoice) selectedVoice = pickAutoVoice(voices);
+    });
+  };
+  window.speechSynthesis.onvoiceschanged = initV;
+  initV();
+  document.addEventListener('touchstart', function once(){
+    initV();
+    document.removeEventListener('touchstart', once);
+  }, {once:true});
+}
+</script>
+</body>
+</html>
